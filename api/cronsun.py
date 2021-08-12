@@ -37,9 +37,9 @@ def get():
 
 def create_job():
     request_data = {
-        "id": "task202108062001",  # 任务唯一id
+        "id": "task20210809",  # 任务唯一id
         "kind": 2,  # 0:普通任务 1:单机单进程 2:组级别普通任务
-        "name": "task202108062001",
+        "name": "task20210809",
         "oldGroup": "",
         "group": "default",  # 任务组，可自定义
         "user": "",

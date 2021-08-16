@@ -1,7 +1,7 @@
 #!/bin/bash
 # date: 2021/08/13
 # auth: vera
-# desc: calculate k8s sourcel by label
+# desc: get deployment cpu/memory
 
 
 # 计算指定命名空间的业务资源（打label实现）

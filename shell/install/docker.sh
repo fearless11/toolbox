@@ -20,6 +20,7 @@ install(){
 
 
 configure(){
+mkdir -p /etc/docker &> /dev/null
 cat > /etc/docker/daemon.json <<EOF
 {
    "graph": "${data}",

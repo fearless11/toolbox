@@ -1,23 +1,29 @@
-#!/bin/bash
-# date: 2021/08/17
-# auth: vera
-# desc: 安装中间件监控的exporter并且注册到kong和consul
-
+#!/bin/sh
+# date: 2021/09/01
+# auth: verajiang
+# desc: 安装exporter并注册到kong和consul
+# file: control_exporter.sh
 
 filename=test.conf
-url_ops_exporter="ops-exporter.oa.com:8080"
+url_ops_exporter="ops-exporter.cloud-exporter.tencent-cloud.com:8080"
 ip_local=$(/usr/sbin/ip add | grep inet | grep global | grep -Ev 'docker' | awk '{print $2}' | awk -F/ '{print $1}'|tail -1)
 default_port=9000
+echo `date +%F-%T` > fail.ip
 
-# 获取监听端口
-get_listen_port(){
-     port_used=$(netstat -nlput  | awk -F: '{print $4}' | grep -E '^[0-9]' | sort -n | uniq |tail -1)
-     [ -z $port_used ] && port_used=${default_port}
-     export listen_port=$(expr ${port_used} + 1)
+# 获取临时端口
+get_random_port(){
+   temp=0
+   while [ $temp == 0 ];do
+      random=$(shuf -i 3000-4000 -n1)
+      netstat -an | grep -w ":${random}" | grep 'LISTEN' && continue
+      temp=${random}
+   done
+   export listen_port=$temp
 }
 
 # 解析配置文件中字段
-# kafka,10.240.92.58:9092,测试kafka,[version],[user],[passwd]
+# 类型,IP:PORT,说明业务,版本,用户;密码
+# kafka,10.240.92.58:9092,测试kafka,[version],[user];[passwd]
 parse_field(){
    line=$(echo $1)
    echo $line | grep "^#" &> /dev/null && continue 
@@ -30,9 +36,8 @@ parse_field(){
    export version=$(echo $line | awk -F, '{print $4}')
    export user=$(echo $line | awk -F, '{print $5}' | awk -F';' '{print $1}')
    export passwd=$(echo $line | awk -F, '{print $5}' | awk -F';' '{print $2}')
-   get_listen_port
+   get_random_port
    export exporter=${ip_local}:${listen_port}
-  
 }
 
 # 启动中间件的容器
@@ -46,7 +51,7 @@ docker_start(){
         which nc &> /dev/null || yum install nmap-ncat -y &> /dev/null
         nc -w 1 ${ip} ${port}  < /dev/null &> /dev/null 
         if [[ $? == 1 ]];then 
-            echo "check network fail ${ip} ${port}"
+            echo "check network fail ${ip} ${port}" | tee -a  fail.ip
             continue
         fi
 
@@ -73,6 +78,7 @@ docker_start(){
         esac
  
         exporter_register
+        
     done < ${filename}
 }
 
@@ -114,8 +120,8 @@ docker_register(){
       export exporter=${ip_local}:${listen_port}
       
       echo "listen_port: $listen_port $docker_name $exporter"
-      num=$(curl -s http://${exporter}/metrics | wc -l)
-      echo "metrics: ${num}"
+      # num=$(curl -s http://${exporter}/metrics | wc -l)
+      # echo "metrics: ${num}"
       exporter_register &> /dev/null
     done < ${filename}
 
@@ -150,7 +156,7 @@ deploy_mysql(){
         --log-opt max-size=100m \
         --log-opt max-file=10 \
         -e DATA_SOURCE_NAME="${user}:${password}@(${ip}:${port})/" \
-        mirrors.oa.com/nops/mysqld-exporter:0.8.1 \
+        mirrors.tencent.com/nops/mysqld-exporter:0.8.1 \
         --web.listen-address=":${listen_port}" 
       else
        docker run -d \
@@ -161,7 +167,7 @@ deploy_mysql(){
         --log-opt max-size=100m \
         --log-opt max-file=10 \
         -e DATA_SOURCE_NAME="${user}:${password}@(${ip}:${port})/" \
-        mirrors.oa.com/nops/mysqld-exporter:v0.12.1 \
+        mirrors.tencent.com/nops/mysqld-exporter:v0.12.1 \
         --web.listen-address=":${listen_port}" 
       fi
 }
@@ -178,7 +184,7 @@ deploy_redis(){
         --restart=always \
         --log-opt max-size=100m \
         --log-opt max-file=10 \
-        mirrors.oa.com/nops/redis_exporter:qcloud \
+        mirrors.tencent.com/nops/redis_exporter:qcloud \
         -web.listen-address=:${listen_port} \
         -redis.addr=redis://${ip}:${port} \
         -redis.password=${passwd} 
@@ -191,7 +197,7 @@ deploy_redis(){
         --restart=always \
         --log-opt max-size=100m \
         --log-opt max-file=10 \
-        mirrors.oa.com/nops/redis_exporter:qcloud \
+        mirrors.tencent.com/nops/redis_exporter:qcloud \
         -web.listen-address=:${listen_port} \
         -redis.addr=redis://${ip}:${port} \
         -redis.password=${user}@${passwd} 
@@ -203,25 +209,41 @@ deploy_redis(){
         --restart=always \
         --log-opt max-size=100m \
         --log-opt max-file=10 \
-         mirrors.oa.com/nops/redis_exporter:v1.10.0 \
+         mirrors.tencent.com/nops/redis_exporter:v1.10.0 \
          -web.listen-address=:${listen_port} \
          -redis.addr=redis://${ip}:${port}
       fi
 }
 
-# 部署kafka_exporter
+# 部署kafka_exporter (兼容0.10)
 deploy_kafka(){
-   docker run -d \
-        --name ${docker_name} \
-        -m 256m \
-        --net=host \
-        --restart=always \
-        --log-opt max-size=100m \
-        --log-opt max-file=10 \
-        mirrors.oa.com/nops/kafka-exporter:v1.2.1 \
-        --kafka.server=${ip}:${port} \
-        --web.listen-address=":${listen_port}" \
-        --log.level=info
+      if [ "x$version" == "x0.1" ]
+      then
+          docker run -d \
+            --name ${docker_name} \
+            -m 256m \
+            --net=host \
+            --restart=always \
+            --log-opt max-size=100m \
+            --log-opt max-file=10 \
+            mirrors.tencent.com/nops/kafka-exporter:v1.2.1 \
+            --kafka.server=${ip}:${port} \
+            --kafka.version=0.10.0.1 \
+            --web.listen-address=":${listen_port}" \
+            --log.level=info
+      else
+          docker run -d \
+            --name ${docker_name} \
+            -m 256m \
+            --net=host \
+            --restart=always \
+            --log-opt max-size=100m \
+            --log-opt max-file=10 \
+            mirrors.tencent.com/nops/kafka-exporter:v1.2.1 \
+            --kafka.server=${ip}:${port} \
+            --web.listen-address=":${listen_port}" \
+            --log.level=info
+      fi
 }
 
 # 部署mongodb_exporter (兼容是否有密码设置)
@@ -236,7 +258,7 @@ deploy_mongodb(){
         --log-opt max-size=100m \
         --log-opt max-file=10 \
         -e MONGODB_URI="mongodb://${user}:${passwd}@${ip}:${port}" \
-        mirrors.oa.com/nops/mongodb-exporter:0.9.0 \
+        mirrors.tencent.com/nops/mongodb-exporter:0.9.0 \
         --web.listen-address=":${listen_port}"
       elif [[ ${version} == "1.0" ]]
       then
@@ -248,7 +270,7 @@ deploy_mongodb(){
         --log-opt max-size=100m \
         --log-opt max-file=10 \
         -e MONGODB_URI="mongodb://${user}:${passwd}@${ip}:${port}" \
-        mirrors.oa.com/nops/mongodb-exporter:0.9.0 \
+        mirrors.tencent.com/nops/mongodb-exporter:0.9.0 \
         --web.listen-address=":${listen_port}"
       else
         docker run -d \
@@ -259,7 +281,7 @@ deploy_mongodb(){
         --log-opt max-size=100m \
         --log-opt max-file=10 \
         -e MONGODB_URI="mongodb://${ip}:${port}" \
-        mirrors.oa.com/nops/mongodb-exporter:0.9.0 \
+        mirrors.tencent.com/nops/mongodb-exporter:0.9.0 \
         --web.listen-address=":${listen_port}"
       fi
 }
@@ -273,7 +295,7 @@ deploy_memcached(){
         --restart=always \
         --log-opt max-size=100m \
         --log-opt max-file=10 \
-        mirrors.oa.com/nops/memcached-exporter:v0.8.0 \
+        mirrors.tencent.com/nops/memcached-exporter:v0.8.0 \
         --memcached.address="${ip}:${port}" \
         --web.listen-address=":${listen_port}" 
 }
@@ -287,7 +309,7 @@ deploy_haproxy(){
     --restart=always \
     --log-opt max-size=100m \
     --log-opt max-file=10 \
-    mirrors.oa.com/nops/haproxy-exporter:v0.12.0 \
+    mirrors.tencent.com/nops/haproxy-exporter:v0.12.0 \
     --haproxy.scrape-uri="http://iyunwei.oa.com/haproxy_stats/${ip}/haproxy1;csv" \
     --web.listen-address=:${listen_port}
 }

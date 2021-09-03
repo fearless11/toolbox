@@ -3,6 +3,11 @@
 # auth: vera
 # desc: install haproxy
 
+# reference
+# http://www.haproxy.org
+# http://demo.haproxy.org
+# https://hub.docker.com/_/haproxy
+
 
 docker_name=haproxy
 

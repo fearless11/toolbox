@@ -1,0 +1,91 @@
+
+# 查询packetbeat中接口访问情况
+
+@url_index=127.0.0.1:9200/packetbeat-7.5.1-2021.09.06
+
+###
+# 查询接口耗时分布 0~10ms 10~100ms 100~500ms 500~1000ms 1s+
+GET http://{{url_index}}/_search
+Authorization:Basic root:root
+Content-Type: application/json
+
+{
+  "size": 0,
+  "query": {
+    "constant_score": {
+      "filter": {
+        "terms": {
+          "server.ip": [
+            "10.19.202.135",
+            "10.19.203.135",
+            "10.19.152.135",
+            "10.19.153.135"
+          ]
+        }
+      },
+      "boost": 1.2
+    }
+  },
+  "aggs": {
+    "response_time": {
+      "range": {
+        "field": "event.duration",
+        "ranges": [
+          {
+            "from": 0,
+            "to": 10000000
+          },
+          {
+            "from": 10000000,
+            "to": 100000000
+          },
+          {
+            "from": 100000000,
+            "to": 500000000
+          },
+          {
+            "from": 500000000,
+            "to": 1000000000
+          },
+          {
+            "from": 1000000000
+          }
+        ]
+      }
+    }
+  }
+}
+
+
+### 
+# 查询接口访问状态码分
+GET http://{{url_index}}/_search
+Authorization:Basic root:root
+Content-Type: application/json
+
+{
+  "size": 0,
+  "query": {
+    "constant_score": {
+      "filter": {
+        "terms": {
+          "server.ip": [
+            "10.19.202.135",
+            "10.19.203.135",
+            "10.19.152.135",
+            "10.19.153.135"
+          ]
+        }
+      },
+      "boost": 1.2
+    }
+  },
+  "aggs": {
+    "status": {
+      "terms": {
+        "field": "http.response.status_code",
+        "size": 10
+      }
+    }
+  }
+}

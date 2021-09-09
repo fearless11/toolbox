@@ -50,7 +50,7 @@ def get_api_request(url):
     # 指定代理地址 server.ip
     payload = "{\"size\": 0,\"query\": {\"constant_score\": {\"filter\": {\"terms\": {\"server.ip\": [\"10.11.202.135\",\"10.19.203.135\",\"10.11.152.135\",\"10.11.153.135\"]}},\"boost\": 1.2}},\"aggs\": {\"status\": {\"terms\": {\"field\": \"http.response.status_code\",\"size\": 10}}}}"
     headers = {
-        'authorization': "Basic ZWxhc3RpYzplbGFzdGljQDIwMjA=",
+        'authorization': "Basic xxxxxxxxxxxxxxxx=",
         'content-type': "application/json"
     }
 
@@ -79,7 +79,7 @@ def get_api_time(url):
     x0ms, x10ms, x100ms, x500ms, x1000ms = 0, 0, 0, 0, 0
     payload = "{\"size\": 0,\"query\": {\"constant_score\": {\"filter\": {\"terms\": {\"server.ip\": [\"10.11.202.135\",\"10.11.203.135\",\"10.11.152.135\",\"10.11.153.135\"]}},\"boost\": 1.2}},\"aggs\": {\"response_time\": {\"range\": {\"field\": \"event.duration\",\"ranges\": [{\"from\": 0,\"to\": 10000000},{\"from\": 10000000,\"to\": 100000000},{\"from\": 100000000,\"to\": 500000000},{\"from\": 500000000,\"to\": 1000000000},{\"from\": 1000000000}]}}}}"
     headers = {
-        'authorization': "Basic ZWxhc3RpYzplbGFzdGljQDIwMjA=",
+        'authorization': "Basic xxxxxxxxxxxx=",
         'content-type': "application/json"
     }
 

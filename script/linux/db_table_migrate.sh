@@ -156,6 +156,7 @@ function delete_data(){
 
 function delete_data_table(){
     # 定期删除六个月前的数据
+    mkdir logs &> /dev/null
     delete_data ${table_name} 180 185 &> logs/table_delete.log
 }
 

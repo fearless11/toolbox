@@ -90,7 +90,7 @@ function insert_data(){
     table_new=$2
     end_time=$3
     # 查询临时表的最后时间为新增数据的开始时间
-    last_time=$(${exec_mysql} "select create_time from ${table_new} order by create_time desc limit 1")
+    last_time=$(${exec_mysql} "select create_time from ${table_new} limit 1")
     start_time=$(echo ${last_time} | awk '{print $2" "$3}')
     ${exec_mysql} "insert into ${table_new} select * from ${table_old} where create_time > \"${start_time}\" and create_time <= \"${end_time}\""
 }

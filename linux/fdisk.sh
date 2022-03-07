@@ -1,6 +1,6 @@
 #!/bin/bash
 # date: 2021/08/16
-# auth: verajiang
+# auth: vera
 # desc: fdisk mount umount
 
 

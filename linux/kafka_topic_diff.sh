@@ -1,6 +1,6 @@
 #!/bin/bash
 # date: 2022/03/07
-# auth: verajiang
+# auth: vera
 # desc: diff test1 and test2 kafka topic/partition
 
 get_topic(){

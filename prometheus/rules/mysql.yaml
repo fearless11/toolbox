@@ -1,0 +1,12 @@
+groups:
+  - name: mysql
+    rules:
+      - alert: MySQLOpenFilesHigh
+        expr: mysql_global_status_innodb_num_open_files / mysql_global_variables_open_files_limit > 0.8
+        for: 5m
+        labels:
+          event_type: mysql
+          level: critical
+        annotations:
+          summary: "Instance {{ $labels.label }} open files too many"
+          description: "{{ $labels.label }} open file {{ .value }} over than 80% of open_files_limit ."

@@ -1,0 +1,6 @@
+[submodule "prometheus/dockerfile/mongodb-grafana/mongodb-grafana"]
+	path = prometheus/dockerfile/mongodb-grafana/mongodb-grafana
+	url = https://github.com/JamesOsgood/mongodb-grafana.git
+[submodule "prometheus/dockerfile/grafana/mongodb-grafana"]
+	path = prometheus/dockerfile/grafana/mongodb-grafana
+	url = https://github.com/JamesOsgood/mongodb-grafana.git

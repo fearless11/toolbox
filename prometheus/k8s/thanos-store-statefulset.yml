@@ -1,0 +1,121 @@
+apiVersion: apps/v1beta2
+kind: StatefulSet
+metadata:
+  labels:
+    k8s-app: prom-thanos-store
+    qcloud-app: prom-thanos-store
+  name: prom-thanos-store
+  namespace: nmpc-production
+spec:
+  podManagementPolicy: Parallel
+  replicas: 2
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      k8s-app: prom-thanos-store
+      qcloud-app: prom-thanos-store
+  serviceName: prom-thanos-store
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        k8s-app: prom-thanos-store
+        qcloud-app: prom-thanos-store
+    spec:
+      containers:
+        - args:
+            - store
+            - --data-dir=/var/thanos/store
+            - --objstore.config-file=/etc/thanos/objectstorage.yaml
+            - --http-address=0.0.0.0:10902
+            - --grpc-address=0.0.0.0:10901
+            - --log.level=debug
+          image: docker.io/11expose11/thanos:v0.14.1
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 6
+            httpGet:
+              path: /-/healthy
+              port: 10902
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 30
+            successThreshold: 1
+            timeoutSeconds: 1
+          name: thanos-store
+          readinessProbe:
+            failureThreshold: 5
+            httpGet:
+              path: /-/ready
+              port: 10902
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          resources:
+            limits:
+              cpu: 500m
+              memory: 1Gi
+            requests:
+              cpu: 250m
+              memory: 256Mi
+          securityContext:
+            privileged: false
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+            - mountPath: /var/thanos/store
+              name: prom-thanos-store
+            - mountPath: /etc/thanos/objectstorage.yaml
+              name: thanos-objectstorage
+              subPath: objectstorage.yaml
+      dnsPolicy: ClusterFirst
+      imagePullSecrets:
+        - name: qcloudregistrykey
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - name: thanos-objectstorage
+          secret:
+            defaultMode: 420
+            secretName: thanos-objectstorage
+  updateStrategy:
+    rollingUpdate:
+      partition: 0
+    type: RollingUpdate
+  volumeClaimTemplates:
+    - metadata:
+        annotations:
+          storageclass.beta.kubernetes.io/is-default-class: cbs
+        creationTimestamp: null
+        name: prom-thanos-store
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 30Gi
+        storageClassName: cbs
+        volumeMode: Filesystem
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prom-thanos-store
+  namespace: nmpc-production
+spec:
+  externalTrafficPolicy: Cluster
+  ports:
+    - name: 10901-10901-tcp
+      port: 10901
+      protocol: TCP
+      targetPort: 10901
+  selector:
+    k8s-app: prom-thanos-store
+    qcloud-app: prom-thanos-store
+  sessionAffinity: None
+  type: NodePort

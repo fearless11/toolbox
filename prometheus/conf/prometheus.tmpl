@@ -1,0 +1,28 @@
+global:
+  scrape_interval:     60s # Set the scrape interval to every 15 seconds. Default is every 1 minute.
+  evaluation_interval: 60s # Evaluate rules every 15 seconds. The default is every 1 minute.
+  scrape_timeout: 30s # scrape_timeout is set to the global default (10s).
+  external_labels:
+    prometheus_replica: "prometheus-campus-SELFADDR"
+
+scrape_configs:
+  - job_name: prometheus
+    static_configs:
+      - targets:
+          - SELFADDR
+
+  - job_name: self_switch_container
+    consul_sd_configs:
+      - server: consul.abc.com
+    relabel_configs:
+      - source_labels: [__meta_consul_tags]
+        regex: .*docker-crm-CAMPUS.*
+        action: keep
+      - source_labels: [__meta_consul_tags]
+        regex: (.*),(.*),(.*),
+        target_label: alias
+        replacement: $2
+      - source_labels: [__meta_consul_tags]
+        regex: (.*),(.*),(.*),
+        target_label: addr
+        replacement: $3

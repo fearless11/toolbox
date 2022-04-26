@@ -1,0 +1,41 @@
+groups:
+  - name: docker-crm
+    rules:
+      # Alert for docker down
+      - alert: DockerDown
+        expr: up{job=~"docker_crm",addr=~".*:8081"} == 0
+        for: 5m
+        labels:
+          level: critical
+        annotations:
+          summary: "{{ $labels.alias }} {{ $labels.addr }} docker unreachable"
+          description: "{{ $labels.alias }} {{ $labels.addr }} docker unreachable more than 5 minutes."
+
+      # Alert for docker process CPU usage rate over 90%
+      - alert: DockerProcessHighCpuUsageRate
+        expr: ceil(rate(container_cpu_user_seconds_total{job="docker_crm",image!="",name=~".+",addr=~".*:8081"}[5m]) * 100) > 90
+        for: 5m
+        labels:
+          level: critical
+        annotations:
+          summary: "{{ $labels.name }} High cpu usage on {{ $labels.alias}} {{ $labels.addr }}"
+          description: "{{ $labels.alias}} {{ $labels.addr }} {{ $labels.name }} cpu usage over 90% in 5 minute (current value: {{ $value }}%)"
+
+      # Alert for docker memory usage rate over 90%
+      - alert: DockerHighMemoryUsageRate
+        expr: ceil(sum by(job, addr, alias,name) (container_memory_usage_bytes{addr=~".+:8081",image!="",job="docker_crm",name!=""}) /  ignoring(name) group_left  sum by(job, addr, alias) (container_spec_memory_limit_bytes{addr=~".+:8081",id="/",job="docker_crm"}) * 100) > 50
+        for: 5m
+        labels:
+          level: critical
+        annotations:
+          summary: "{{ $labels.alias}} {{ $labels.addr }}  {{ $labels.name }} High memory usage rate"
+          description: "{{ $labels.alias}} {{ $labels.addr }}  {{ $labels.name }} memory usage over 50% in 5 minute (current value: {{ $value }}%)"
+
+      - alert: ContainerNumAlert
+        expr: count(container_last_seen{image!="",job="docker_crm",label=~"crm.*"}) by (instance) - count(container_last_seen{image!="",job="docker_crm",label=~"crm.*"} offset 1m) by (instance) != 0
+        for: 2m
+        labels:
+          project: sdn
+        annotations:
+          summary: "Instance {{ $labels.instance }} containerNum change"
+          description: "{{ $labels.instance }} containerNum changed,change {{ $value }}"

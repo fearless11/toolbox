@@ -1,0 +1,30 @@
+global:
+  scrape_interval: 60s # Set the scrape interval to every 15 seconds. Default is every 1 minute.
+  evaluation_interval: 60s # Evaluate rules every 15 seconds. The default is every 1 minute.
+  scrape_timeout: 30s # scrape_timeout is set to the global default (10s).
+  external_labels:
+    monitor: "prometheus-federal-1"
+
+scrape_configs:
+  - job_name: prometheus
+    static_configs:
+      - targets:
+          - 127.0.0.1:9090
+
+  - job_name: "federate-test"
+    scrape_interval: 60s
+    honor_labels: true
+    metrics_path: "/federate"
+    params:
+      "match[]":
+        - '{job="prometheus"}'
+        - '{job="node_exporter"}'
+        - '{job="container_exporter"}'
+        - '{job="biz_crm"}'
+    consul_sd_configs:
+      - server: "consul.abc.com"
+        datacenter: "prometheus"
+    relabel_configs:
+      - source_labels: [__meta_consul_tags]
+        regex: .*prometheus-federate-test.*
+        action: keep

@@ -1,0 +1,558 @@
+global:
+  scrape_interval: 1m
+  scrape_timeout: 1m
+  evaluation_interval: 1m
+  external_labels:
+    prometheus_replica: prometheus-0
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - prom-alertmanager1:9093
+            - prom-alertmanager2:9093
+      scheme: http
+      timeout: 1m
+      api_version: v1
+
+rule_files:
+  - /etc/prometheus/rules/*rules.yaml
+
+scrape_configs:
+  - job_name: prometheus
+    honor_timestamps: true
+    scrape_interval: 1m
+    scrape_timeout: 1m
+    metrics_path: /metrics
+    scheme: http
+    static_configs:
+      - targets:
+          - 127.0.0.1:9090
+
+  - job_name: pushgateway
+    honor_timestamps: true
+    scrape_interval: 1m
+    scrape_timeout: 1m
+    metrics_path: /metrics
+    scheme: http
+    static_configs:
+      - targets:
+          - prometheus-pushgateway:9091
+
+  - job_name: prometheus_federal_crm
+    honor_labels: true
+    honor_timestamps: true
+    params:
+      match[]:
+        - '{job="prometheus"}'
+        - '{job="node_crm"}'
+        - '{job="docker_crm"}'
+    scrape_interval: 1m
+    scrape_timeout: 1m
+    metrics_path: /federate
+    scheme: http
+    static_configs:
+      - targets:
+          - 127.0.0.1:9090
+          - 127.0.0.1:9090
+
+  - job_name: prometheus_federal_erp
+    honor_labels: true
+    honor_timestamps: true
+    params:
+      match[]:
+        - '{job="prometheus"}'
+        - '{job="docker_erp"}'
+        - '{job="node_erp"}'
+        - '{job="process_erp"}'
+    scrape_interval: 1m
+    scrape_timeout: 1m
+    metrics_path: /federate
+    scheme: http
+    static_configs:
+      - targets:
+          - 127.0.0.1:9090
+          - 127.0.0.1:9090
+
+  - job_name: pass_kafka
+    honor_labels: true
+    honor_timestamps: true
+    scrape_interval: 1m
+    scrape_timeout: 1m
+    metrics_path: /metrics
+    scheme: http
+    consul_sd_configs:
+      - server: prom-consul:8500
+        tag_separator: ","
+        scheme: http
+        allow_stale: true
+        refresh_interval: 30s
+    relabel_configs:
+      - source_labels: [__meta_consul_tags]
+        separator: ;
+        regex: .*kafka.*
+        replacement: $1
+        action: keep
+      - source_labels: [__meta_consul_tags]
+        separator: ;
+        regex: (.*)kafka,(.*),(.*),
+        target_label: alias
+        replacement: $2
+        action: replace
+      - source_labels: [__meta_consul_tags]
+        separator: ;
+        regex: (.*)kafka,(.*),(.*),
+        target_label: addr
+        replacement: $3
+        action: replace
+      - source_labels: [__meta_consul_service]
+        separator: ;
+        regex: (.*)
+        target_label: job
+        replacement: $1
+        action: replace
+
+  - job_name: pass_pulsar
+    honor_labels: true
+    honor_timestamps: true
+    scrape_interval: 1m
+    scrape_timeout: 1m
+    metrics_path: /metrics/
+    scheme: http
+    consul_sd_configs:
+      - server: prom-consul:8500
+        tag_separator: ","
+        scheme: http
+        allow_stale: true
+        refresh_interval: 30s
+    relabel_configs:
+      - source_labels: [__meta_consul_tags]
+        separator: ;
+        regex: .*pulsar.*
+        replacement: $1
+        action: keep
+      - source_labels: [__meta_consul_tags]
+        separator: ;
+        regex: (.*)pulsar,(.*),(.*),
+        target_label: alias
+        replacement: $2
+        action: replace
+      - source_labels: [__meta_consul_tags]
+        separator: ;
+        regex: (.*)pulsar,(.*),(.*),
+        target_label: addr
+        replacement: $3
+        action: replace
+      - source_labels: [__meta_consul_service]
+        separator: ;
+        regex: (.*)
+        target_label: job
+        replacement: $1
+        action: replace
+
+  - job_name: pass_mongodb
+    honor_labels: true
+    honor_timestamps: true
+    scrape_interval: 1m
+    scrape_timeout: 1m
+    metrics_path: /metrics
+    scheme: http
+    consul_sd_configs:
+      - server: prom-consul:8500
+        tag_separator: ","
+        scheme: http
+        allow_stale: true
+        refresh_interval: 30s
+    relabel_configs:
+      - source_labels: [__meta_consul_tags]
+        separator: ;
+        regex: .*mongodb.*
+        replacement: $1
+        action: keep
+      - source_labels: [__meta_consul_tags]
+        separator: ;
+        regex: (.*)mongodb,(.*),(.*),
+        target_label: alias
+        replacement: $2
+        action: replace
+      - source_labels: [__meta_consul_tags]
+        separator: ;
+        regex: (.*)mongodb,(.*),(.*),
+        target_label: addr
+        replacement: $3
+        action: replace
+      - source_labels: [__meta_consul_service]
+        separator: ;
+        regex: (.*)
+        target_label: job
+        replacement: $1
+        action: replace
+
+  - job_name: pass_redis
+    honor_labels: true
+    honor_timestamps: true
+    scrape_interval: 1m
+    scrape_timeout: 1m
+    metrics_path: /metrics
+    scheme: http
+    consul_sd_configs:
+      - server: prom-consul:8500
+        tag_separator: ","
+        scheme: http
+        allow_stale: true
+        refresh_interval: 30s
+    relabel_configs:
+      - source_labels: [__meta_consul_tags]
+        separator: ;
+        regex: .*redis.*
+        replacement: $1
+        action: keep
+      - source_labels: [__meta_consul_tags]
+        separator: ;
+        regex: (.*)redis,(.*),(.*),
+        target_label: label
+        replacement: $2
+        action: replace
+      - source_labels: [__meta_consul_tags]
+        separator: ;
+        regex: (.*)redis,(.*),(.*),
+        target_label: addr
+        replacement: $3
+        action: replace
+      - source_labels: [__meta_consul_service]
+        separator: ;
+        regex: (.*)
+        target_label: job
+        replacement: $1
+        action: replace
+
+  - job_name: pass_mysql
+    honor_labels: true
+    honor_timestamps: true
+    scrape_interval: 1m
+    scrape_timeout: 1m
+    metrics_path: /metrics
+    scheme: http
+    consul_sd_configs:
+      - server: prom-consul:8500
+        tag_separator: ","
+        scheme: http
+        allow_stale: true
+        refresh_interval: 30s
+    relabel_configs:
+      - source_labels: [__meta_consul_tags]
+        separator: ;
+        regex: .*mysql.*
+        replacement: $1
+        action: keep
+      - source_labels: [__meta_consul_tags]
+        separator: ;
+        regex: (.*)mysql,(.*),(.*),
+        target_label: alias
+        replacement: $2
+        action: replace
+      - source_labels: [__meta_consul_tags]
+        separator: ;
+        regex: (.*)mysql,(.*),(.*),
+        target_label: addr
+        replacement: $3
+        action: replace
+      - source_labels: [__meta_consul_service]
+        separator: ;
+        regex: (.*)
+        target_label: job
+        replacement: $1
+        action: replace
+
+  - job_name: pass_memcached
+    honor_labels: true
+    honor_timestamps: true
+    scrape_interval: 1m
+    scrape_timeout: 1m
+    metrics_path: /metrics
+    scheme: http
+    consul_sd_configs:
+      - server: prom-consul:8500
+        tag_separator: ","
+        scheme: http
+        allow_stale: true
+        refresh_interval: 30s
+    relabel_configs:
+      - source_labels: [__meta_consul_tags]
+        separator: ;
+        regex: .*memcache.*
+        replacement: $1
+        action: keep
+      - source_labels: [__meta_consul_tags]
+        separator: ;
+        regex: (.*)memcache,(.*),(.*),
+        target_label: alias
+        replacement: $2
+        action: replace
+      - source_labels: [__meta_consul_tags]
+        separator: ;
+        regex: (.*)memcache,(.*),(.*),
+        target_label: addr
+        replacement: $3
+        action: replace
+      - source_labels: [__meta_consul_service]
+        separator: ;
+        regex: (.*)
+        target_label: job
+        replacement: $1
+        action: replace
+
+  - job_name: pass_haproxy
+    honor_labels: true
+    honor_timestamps: true
+    scrape_interval: 1m
+    scrape_timeout: 1m
+    metrics_path: /metrics
+    scheme: http
+    consul_sd_configs:
+      - server: prom-consul:8500
+        tag_separator: ","
+        scheme: http
+        allow_stale: true
+        refresh_interval: 30s
+    relabel_configs:
+      - source_labels: [__meta_consul_tags]
+        separator: ;
+        regex: .*haproxy.*
+        replacement: $1
+        action: keep
+      - source_labels: [__meta_consul_tags]
+        separator: ;
+        regex: (.*)haproxy,(.*),(.*),
+        target_label: alias
+        replacement: $2
+        action: replace
+      - source_labels: [__meta_consul_tags]
+        separator: ;
+        regex: (.*)haproxy,(.*),(.*),
+        target_label: addr
+        replacement: $3
+        action: replace
+      - source_labels: [__meta_consul_service]
+        separator: ;
+        regex: (.*)
+        target_label: job
+        replacement: $1
+        action: replace
+
+  - job_name: node_crm
+    honor_labels: true
+    honor_timestamps: true
+    scrape_interval: 1m
+    scrape_timeout: 1m
+    metrics_path: /metrics
+    scheme: http
+    consul_sd_configs:
+      - server: prom-consul:8500
+        tag_separator: ","
+        scheme: http
+        allow_stale: true
+        refresh_interval: 30s
+    relabel_configs:
+      - source_labels: [__meta_consul_tags]
+        separator: ;
+        regex: .*node_crm.*
+        replacement: $1
+        action: keep
+      - source_labels: [__meta_consul_tags]
+        separator: ;
+        regex: (.*)(node_crm),(.*),
+        target_label: alias
+        replacement: $2
+        action: replace
+      - source_labels: [__meta_consul_tags]
+        separator: ;
+        regex: (.*)(node_crm),(.*),
+        target_label: addr
+        replacement: $3
+        action: replace
+      - source_labels: [__meta_consul_service]
+        separator: ;
+        regex: (.*)
+        target_label: job
+        replacement: $1
+        action: replace
+
+  - job_name: docker_crm
+    honor_labels: true
+    honor_timestamps: true
+    scrape_interval: 1m
+    scrape_timeout: 1m
+    metrics_path: /metrics
+    scheme: http
+    consul_sd_configs:
+      - server: prom-consul:8500
+        tag_separator: ","
+        scheme: http
+        allow_stale: true
+        refresh_interval: 30s
+    relabel_configs:
+      - source_labels: [__meta_consul_tags]
+        separator: ;
+        regex: .*docker_crm.*
+        replacement: $1
+        action: keep
+      - source_labels: [__meta_consul_tags]
+        separator: ;
+        regex: (.*)(docker_crm),(.*),
+        target_label: alias
+        replacement: $2
+        action: replace
+      - source_labels: [__meta_consul_tags]
+        separator: ;
+        regex: (.*)(docker_crm),(.*),
+        target_label: addr
+        replacement: $3
+        action: replace
+      - source_labels: [__meta_consul_service]
+        separator: ;
+        regex: (.*)
+        target_label: job
+        replacement: $1
+        action: replace
+
+  - job_name: docker_erp
+    honor_labels: true
+    honor_timestamps: false
+    scrape_interval: 1m
+    scrape_timeout: 1m
+    metrics_path: /metrics
+    scheme: http
+    consul_sd_configs:
+      - server: prom-consul:8500
+        tag_separator: ","
+        scheme: http
+        allow_stale: true
+        refresh_interval: 30s
+    relabel_configs:
+      - source_labels: [__meta_consul_tags]
+        separator: ;
+        regex: .*docker_erp.*
+        replacement: $1
+        action: keep
+      - source_labels: [__meta_consul_tags]
+        separator: ;
+        regex: (.*)docker_erp,(.*),(.*),
+        target_label: alias
+        replacement: $2
+        action: replace
+      - source_labels: [__meta_consul_tags]
+        separator: ;
+        regex: (.*)docker_erp,(.*),(.*),
+        target_label: addr
+        replacement: $3
+        action: replace
+      - source_labels: [__meta_consul_service]
+        separator: ;
+        regex: (.*)
+        target_label: job
+        replacement: $1
+        action: replace
+
+  - job_name: business
+    honor_labels: true
+    honor_timestamps: true
+    scrape_interval: 1m
+    scrape_timeout: 1m
+    metrics_path: /metrics
+    scheme: http
+    consul_sd_configs:
+      - server: prom-consul:8500
+        tag_separator: ","
+        scheme: http
+        allow_stale: true
+        refresh_interval: 30s
+    relabel_configs:
+      - source_labels: [__meta_consul_tags]
+        separator: ;
+        regex: .*business.*
+        replacement: $1
+        action: keep
+      - source_labels: [__meta_consul_tags]
+        separator: ;
+        regex: (.*)business,(.*),(.*),
+        target_label: alias
+        replacement: $2
+        action: replace
+
+  - job_name: node_haproxy
+    honor_labels: true
+    honor_timestamps: true
+    scrape_interval: 10s
+    scrape_timeout: 5s
+    metrics_path: /metrics
+    scheme: http
+    consul_sd_configs:
+      - server: prom-consul:8500
+        tag_separator: ","
+        scheme: http
+        allow_stale: true
+        refresh_interval: 30s
+    relabel_configs:
+      - source_labels: [__meta_consul_tags]
+        separator: ;
+        regex: (.*)node_haproxy,(.*),(.*),
+        replacement: $1
+        action: keep
+      - source_labels: [__meta_consul_tags]
+        separator: ;
+        regex: (.*)node_haproxy,(.*),(.*),
+        target_label: alias
+        replacement: $2
+        action: replace
+      - source_labels: [__meta_consul_tags]
+        separator: ;
+        regex: (.*)node_haproxy,(.*),(.*),
+        target_label: addr
+        replacement: $3
+        action: replace
+      - source_labels: [__meta_consul_service]
+        separator: ;
+        regex: (.*)
+        target_label: job
+        replacement: $1
+        action: replace
+
+  - job_name: pass_apisix
+    honor_labels: true
+    honor_timestamps: true
+    scrape_interval: 10s
+    scrape_timeout: 5s
+    metrics_path: /apisix/prometheus/metrics
+    scheme: http
+    consul_sd_configs:
+      - server: prom-consul:8500
+        tag_separator: ","
+        scheme: http
+        allow_stale: true
+        refresh_interval: 30s
+    relabel_configs:
+      - source_labels: [__meta_consul_tags]
+        separator: ;
+        regex: (.*)apisix,(.*),(.*),
+        replacement: $1
+        action: keep
+      - source_labels: [__meta_consul_tags]
+        separator: ;
+        regex: (.*)apisix,(.*),(.*),
+        target_label: alias
+        replacement: $2
+        action: replace
+      - source_labels: [__meta_consul_tags]
+        separator: ;
+        regex: (.*)apisix,(.*),(.*),
+        target_label: addr
+        replacement: $3
+        action: replace
+      - source_labels: [__meta_consul_service]
+        separator: ;
+        regex: (.*)
+        target_label: job
+        replacement: $1
+        action: replace
+

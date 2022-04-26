@@ -1,0 +1,179 @@
+apiVersion: apps/v1beta2
+kind: StatefulSet
+metadata:
+  labels:
+    k8s-app: prometheus
+    qcloud-app: prometheus
+  name: prometheus
+  namespace: nmpc-production
+spec:
+  podManagementPolicy: Parallel
+  replicas: 2
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      k8s-app: prometheus
+      qcloud-app: prometheus
+  serviceName: prometheus
+  template:
+    metadata:
+      labels:
+        k8s-app: prometheus
+        qcloud-app: prometheus
+    spec:
+      containers:
+        - args:
+            - --config.file=/etc/prometheus/config_out/prometheus.yaml
+            - --storage.tsdb.path=/prometheus
+            - --storage.tsdb.retention.time=10d
+            - --web.route-prefix=/
+            - --web.enable-lifecycle
+            - --web.enable-admin-api
+            - --storage.tsdb.no-lockfile
+            - --storage.tsdb.min-block-duration=2h
+            - --storage.tsdb.max-block-duration=2h
+            - --log.level=info
+          image: docker.io/11expose11/prometheus:2.19.2
+          imagePullPolicy: IfNotPresent
+          name: prometheus
+          resources:
+            limits:
+              cpu: 8000m
+              memory: 8Gi
+            requests:
+              cpu: 2000m
+              memory: 2Gi
+          securityContext:
+            privileged: false
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+            - mountPath: /etc/prometheus/config_out
+              name: thanos-config-out
+            - mountPath: /prometheus
+              name: prometheus-storage
+            - mountPath: /etc/prometheus/rules
+              name: rainbow-config-out-rules
+        - args:
+            - sidecar
+            - --log.level=info
+            - --tsdb.path=/prometheus
+            - --prometheus.url=http://127.0.0.1:9090
+            - --objstore.config-file=/etc/thanos/objectstorage.yaml
+            - --reloader.config-file=/etc/prometheus/config/prometheus.yaml.tmpl
+            - --reloader.config-envsubst-file=/etc/prometheus/config_out/prometheus.yaml
+            - --reloader.rule-dir=/etc/prometheus/config/rules/
+          image: docker.io/11expose11/thanos:v0.14.0
+          imagePullPolicy: IfNotPresent
+          name: thanos
+          securityContext:
+            privileged: false
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+            - mountPath: /etc/prometheus/config
+              name: rainbow-config-out
+            - mountPath: /etc/prometheus/config_out
+              name: thanos-config-out
+            - mountPath: /etc/prometheus/config/rules
+              name: rainbow-config-out-rules
+            - mountPath: /prometheus
+              name: prometheus-storage
+            - mountPath: /etc/thanos/objectstorage.yaml
+              name: thanos-objectstorage
+              subPath: objectstorage.yaml
+        - image: abc.com/biz-test/prometheus_rainbow:v0.0.1
+          imagePullPolicy: Always
+          name: rainbow
+          resources:
+            limits:
+              cpu: 8000m
+              memory: 8Gi
+            requests:
+              cpu: 2000m
+              memory: 2Gi
+          securityContext:
+            privileged: false
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+            - mountPath: /etc/prome/config_out/prod
+              name: rainbow-config-out
+            - mountPath: /etc/prome/config_out/prod/rules
+              name: rainbow-config-out-rules
+      dnsPolicy: ClusterFirst
+      imagePullSecrets:
+        - name: qcloudregistrykey
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - emptyDir: {}
+          name: thanos-config-out
+        - name: thanos-objectstorage
+          secret:
+            defaultMode: 420
+            secretName: thanos-objectstorage
+        - emptyDir: {}
+          name: rainbow-config-out
+        - emptyDir: {}
+          name: rainbow-config-out-rules
+  updateStrategy:
+    rollingUpdate:
+      partition: 0
+    type: RollingUpdate
+  volumeClaimTemplates:
+    - metadata:
+        annotations:
+          storageclass.beta.kubernetes.io/is-default-class: common-storage
+        creationTimestamp: null
+        name: prometheus-storage
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 80Gi
+        storageClassName: common-storage
+        volumeMode: Filesystem
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus
+  namespace: nmpc-production
+spec:
+  externalTrafficPolicy: Cluster
+  ports:
+    - name: 9090-9090-tcp
+      port: 9090
+      protocol: TCP
+      targetPort: 9090
+    - name: 10901-10901-tcp
+      port: 10901
+      protocol: TCP
+      targetPort: 10901
+  selector:
+    k8s-app: prometheus
+    qcloud-app: prometheus
+  sessionAffinity: None
+  type: NodePort
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: thanos-objectstorage
+  namespace: nmpc-production
+type: Opaque
+stringData:
+  objectstorage.yaml: |
+    type: COS
+    config:
+      bucket: "xxx"
+      region: "xxx"
+      app_id: "xxx"
+      secret_key: "xxx"
+      secret_id: "xxx"

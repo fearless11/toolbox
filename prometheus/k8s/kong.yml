@@ -1,0 +1,345 @@
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  labels:
+    k8s-app: prom-kong-migrations
+    qcloud-app: prom-kong-migrations
+  name: prom-kong-migrations
+  namespace: nmpc-production
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      k8s-app: prom-kong-migrations
+      qcloud-app: prom-kong-migrations
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        k8s-app: prom-kong-migrations
+        qcloud-app: prom-kong-migrations
+    spec:
+      containers:
+        - args:
+            - /bin/sh
+            - -c
+            - kong migrations bootstrap
+          env:
+            - name: KONG_DATABASE
+              value: postgres
+            - name: KONG_PG_USER
+              value: kong
+            - name: KONG_PG_PASSWORD
+              value: 123456
+            - name: KONG_PG_DATABASE
+              value: kong
+            - name: KONG_PG_HOST
+              value: 127.0.0.1
+          image: docker.io/11expose11/kong:2.1
+          imagePullPolicy: IfNotPresent
+          name: kong-migrations
+          resources:
+            limits:
+              cpu: 500m
+              memory: 1Gi
+            requests:
+              cpu: 250m
+              memory: 256Mi
+          securityContext:
+            privileged: false
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
+      imagePullSecrets:
+        - name: qcloudregistrykey
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+
+---
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  labels:
+    k8s-app: prom-kong
+    qcloud-app: prom-kong
+  name: prom-kong
+  namespace: nmpc-production
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      k8s-app: prom-kong
+      qcloud-app: prom-kong
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        k8s-app: prom-kong
+        qcloud-app: prom-kong
+    spec:
+      containers:
+        - env:
+            - name: TZ
+              value: Asia/Shanghai
+            - name: KONG_PROXY_LISTEN
+              value: 0.0.0.0:8080,0.0.0.0:8443 ssl http2
+            - name: KONG_ADMIN_LISTEN
+              value: 0.0.0.0:8081
+            - name: KONG_NGINX_USER
+              value: nobody nobody
+            - name: KONG_DATABASE
+              value: postgres
+            - name: KONG_PG_USER
+              value: kong
+            - name: KONG_PG_PASSWORD
+              value: 123456
+            - name: KONG_PG_DATABASE
+              value: kong
+            - name: KONG_PG_HOST
+              value: 127.0.0.1
+            - name: KONG_DB_UPDATE_FREQUENCY
+              value: "5"
+            - name: KONG_NGINX_WORKER_PROCESSES
+              value: "2"
+            - name: KONG_NGINX_MAIN_WORKER_RLIMIT_NOFILE
+              value: "65535"
+            - name: KONG_CLIENT_BODY_BUFFER_SIZE
+              value: 1m
+            - name: KONG_LOG_LEVEL
+              value: warn
+            - name: KONG_PROXY_ACCESS_LOG
+              value: /dev/null
+            - name: KONG_ADMIN_ACCESS_LOG
+              value: /dev/null
+            - name: KONG_PROXY_ERROR_LOG
+              value: /dev/stderr
+            - name: KONG_ADMIN_ERROR_LOG
+              value: /dev/stderr
+            - name: KONG_PLUGINS
+              value: bundled
+            - name: KONG_MEM_CACHE_SIZE
+              value: 512m
+            - name: KONG_NGINX_CLIENT_BODY_BUFFER_SIZE
+              value: 32m
+            - name: KONG_NGINX_HTTP_PROXY_BUFFERS
+              value: 8 32m
+            - name: KONG_NGINX_HTTP_PROXY_BUFFER_SIZE
+              value: 32m
+            - name: KONG_NGINX_HTTP_PROXY_BUSY_BUFFERS_SIZE
+              value: 32m
+            - name: KONG_NGINX_HTTP_CLIENT_HEADER_BUFFER_SIZE
+              value: 32m
+            - name: KONG_NGINX_HTTP_LARGE_CLIENT_HEADER_BUFFERS
+              value: 8 32m
+            - name: KONG_REAL_IP_HEADER
+              value: X-Forwarded-For
+            - name: KONG_REAL_IP_RECURSIVE
+              value: "on"
+          image: docker.io/11expose11/kong:2.1
+          imagePullPolicy: Always
+          name: kong
+          resources:
+            limits:
+              cpu: "2"
+              memory: 2Gi
+            requests:
+              cpu: "2"
+              memory: 2Gi
+          securityContext:
+            privileged: false
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
+      imagePullSecrets:
+        - name: qcloudregistrykey
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+
+---
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  labels:
+    k8s-app: prom-konga-prepare
+    qcloud-app: prom-konga-prepare
+  name: prom-konga-prepare
+  namespace: nmpc-production
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      k8s-app: prom-konga-prepare
+      qcloud-app: prom-konga-prepare
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        k8s-app: prom-konga-prepare
+        qcloud-app: prom-konga-prepare
+    spec:
+      containers:
+        - image: docker.io/11expose11/konga:0.14.9
+          command:
+            [
+              "/bin/sh",
+              "-c",
+              "/app/start.sh -c prepare -a postgres -u postgresql://kong:rKOVTsVo1@9.138.108.204:5432/konga",
+            ]
+          imagePullPolicy: IfNotPresent
+          name: konga-prepare
+          resources:
+            limits:
+              cpu: 500m
+              memory: 1Gi
+            requests:
+              cpu: 250m
+              memory: 256Mi
+          securityContext:
+            privileged: false
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
+      imagePullSecrets:
+        - name: qcloudregistrykey
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+
+---
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  labels:
+    k8s-app: prom-konga
+    qcloud-app: prom-konga
+  name: prom-konga
+  namespace: nmpc-production
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      k8s-app: prom-konga
+      qcloud-app: prom-konga
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        k8s-app: prom-konga
+        qcloud-app: prom-konga
+    spec:
+      containers:
+        - env:
+            - name: PATH
+              value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+            - name: NODE_VERSION
+              value: 12.16.3
+            - name: YARN_VERSION
+              value: 1.22.4
+            - name: PORT
+              value: "8080"
+            - name: NODE_ENV
+              value: production
+            - name: DB_ADAPTER
+              value: postgres
+            - name: DB_HOST
+              value: 127.0.0.1
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_USER
+              value: kong
+            - name: DB_PASSWORD
+              value: 123456
+            - name: DB_DATABASE
+              value: konga
+          image: docker.io/11expose11/konga:0.14.9
+          imagePullPolicy: IfNotPresent
+          name: konga
+          resources:
+            limits:
+              cpu: "2"
+              memory: 4Gi
+            requests:
+              cpu: "2"
+              memory: 4Gi
+          securityContext:
+            privileged: false
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
+      imagePullSecrets:
+        - name: qcloudregistrykey
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prom-kong
+  namespace: nmpc-production
+spec:
+  externalTrafficPolicy: Cluster
+  ports:
+    - name: 8081-8001-tcp
+      port: 8081
+      protocol: TCP
+      targetPort: 8081
+    - name: 8080-8000-tcp-7dcutxm5yd4
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+  selector:
+    k8s-app: prom-kong
+    qcloud-app: prom-kong
+  sessionAffinity: None
+  type: NodePort
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prom-konga
+  namespace: nmpc-production
+spec:
+  externalTrafficPolicy: Cluster
+  ports:
+    - name: 8080-8080-tcp
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+  selector:
+    k8s-app: prom-konga
+    qcloud-app: prom-konga
+  sessionAffinity: None
+  type: NodePort

@@ -1,0 +1,47 @@
+groups:
+- name: node-crm
+  rules:
+  - alert: hostCpuUsageAlert
+    expr: 1 - avg(irate(node_cpu_seconds_total{alias="node-crm",mode="idle"}[30m])) by (instance) > 0.9
+    for: 3m
+    labels:
+      level: critical
+    annotations:
+      summary: "Instance {{ $labels.instance }} CPU usage high"
+      description: "{{ $labels.instance }} CPU usage above 90% (current value: {{ $value }})"
+
+  - alert: hostMemUsageAlert
+    expr: (1 - (node_memory_MemAvailable_bytes{alias="node-crm"} / (node_memory_MemTotal_bytes{alias="node-crm"})))* 100 > 90
+    for: 3m
+    labels:
+      level: critical
+    annotations:
+      summary: "Instance {{ $labels.instance }} MEM usage high"
+      description: "{{ $labels.instance }} MEM usage above 90% (current value: {{ $value }})"
+
+  - alert: InstanceDown
+    expr: up{alias="node-crm"} == 0
+    for: 2m
+    labels:
+      level: critical
+    annotations:
+      summary: "Instance {{ $labels.instance }} down"
+      description: "{{ $labels.instance }} can not access for more than 2 minutes."
+
+  - alert: DiskUsageAlert
+    expr: 1-(node_filesystem_free_bytes{alias="node-crm",fstype=~"ext4|xfs",mountpoint=~"/|/data|/usr/local|/data1"} / node_filesystem_size_bytes{alias="node-crm",fstype=~"ext4|xfs"}) > 0.95
+    for: 3m
+    labels:
+      level: critical
+    annotations:
+      summary: "Instance {{ $labels.instance }} DiskUsage high"
+      description: "{{ $labels.instance }} {{ $labels.mountpoint }} usage above 80% (current value: {{ $value }})"
+  
+  - alert: hostLoad15Alert
+    expr: node_load15{alias="node-crm"} > 80
+    for: 3m
+    labels:
+      level: critical
+    annotations:
+      summary: "Instance {{ $labels.instance }} Load15 high"
+      description: "{{ $labels.instance }} loadaverage for 15min above 80 (current value: {{ $value }})"

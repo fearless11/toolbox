@@ -1,0 +1,93 @@
+apiVersion: apps/v1beta2
+kind: StatefulSet
+metadata:
+  labels:
+    k8s-app: prometheus-pushgateway
+    qcloud-app: prometheus-pushgateway
+  name: prometheus-pushgateway
+  namespace: nmpc-production
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      k8s-app: prometheus-pushgateway
+      qcloud-app: prometheus-pushgateway
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        k8s-app: prometheus-pushgateway
+        qcloud-app: prometheus-pushgateway
+    spec:
+      containers:
+        - image: docker.io/11expose11/pushgateway:v1.2.0
+          imagePullPolicy: IfNotPresent
+          name: prometheus-pushgateway
+          args:
+            - --web.enable-admin-api
+            - --persistence.file="/data/pushmetrics"
+            - --persistence.interval=5m
+          resources:
+            limits:
+              cpu: 500m
+              memory: 1Gi
+            requests:
+              cpu: 250m
+              memory: 256Mi
+          securityContext:
+            privileged: false
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+            - mountPath: /data/pushmetrics
+              name: prometheus-pushgateway
+      dnsPolicy: ClusterFirst
+      imagePullSecrets:
+        - name: qcloudregistrykey
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - name: prometheus-pushgateway
+          secret:
+            defaultMode: 420
+            secretName: prometheus-pushgateway
+  volumeClaimTemplates:
+    - metadata:
+        annotations:
+          storageclass.beta.kubernetes.io/is-default-class: cbs
+        name: prometheus-pushgateway
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 10Gi
+        storageClassName: cbs
+        volumeMode: Filesystem
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus-pushgateway
+  namespace: nmpc-production
+spec:
+  externalTrafficPolicy: Cluster
+  ports:
+    - name: 9091-9091-tcp
+      port: 9091
+      protocol: TCP
+      targetPort: 9091
+  selector:
+    k8s-app: prometheus-pushgateway
+    qcloud-app: prometheus-pushgateway
+  sessionAffinity: None
+  type: NodePort

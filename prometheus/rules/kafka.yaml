@@ -1,0 +1,22 @@
+groups:
+  - name: kafka
+    rules:
+      - alert: KafkaBrokerDown
+        expr: kafka_brokers{alias="biz_crm"} != 3
+        for: 1m
+        labels:
+          source: kafka
+          severity: error
+        annotations:
+          summary: "kafka broker {{ $labels.addr }} down"
+          description: "kafka broker {{ $labels.addr }} has been down for more than 1m."
+
+      - alert: KafkaConsumergroupLag
+        expr: ceil(sum by(alias, addr, consumergroup, topic) (irate(kafka_consumergroup_lag{addr="127.0.0.1:9092",alias="biz_crm",consumergroup=~"biz-crm.*"}[5m])))> 30
+        for: 1m
+        labels:
+          source: kafka
+          severity: warning
+        annotations:
+          summary: "kafka {{ $labels.alias }} {{ $labels.addr }} {{ $labels.consumergroup }} {{ $labels.topic }} lag over 10% (current: {{ $value  }}%)"
+          description: "kafka {{ $labels.alias }} {{ $labels.addr }}  {{ $labels.consumergroup }} {{ $labels.topic }} lag over 10% (current: {{ $value }}%)"

@@ -1,0 +1,10 @@
+{
+  "ports": {
+    "http": 8502,
+    "dns": 8602,
+    "grpc": 8402,
+    "server": 8320,
+    "serf_lan": 8321,
+    "serf_wan": 8322
+  }
+}

@@ -1,0 +1,340 @@
+apiVersion: apps/v1beta2
+kind: StatefulSet
+metadata:
+  labels:
+    k8s-app: prom-consul
+    qcloud-app: prom-consul
+  name: prom-consul
+  namespace: nmpc-production
+spec:
+  replicas: 3
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      k8s-app: prom-consul
+      qcloud-app: prom-consul
+  serviceName: prom-consul
+  template:
+    metadata:
+      labels:
+        k8s-app: prom-consul
+        qcloud-app: prom-consul
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: k8s-app
+                    operator: In
+                    values:
+                      - prom-consul
+              topologyKey: kubernetes.io/hostname
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: prom-consul
+          image: docker.io/11expose11/consul:1.8.0
+          imagePullPolicy: IfNotPresent
+          args:
+            - "agent"
+            - "-server"
+            - "-bootstrap-expect=3"
+            - "-ui"
+            - "-data-dir=/consul/data"
+            - "-bind=0.0.0.0"
+            - "-client=0.0.0.0"
+            - "-advertise=$(PODIP)"
+            - "-retry-join=prom-consul-0.prom-consul.$(NAMESPACE).svc.cluster.local"
+            - "-retry-join=prom-consul-1.prom-consul.$(NAMESPACE).svc.cluster.local"
+            - "-retry-join=prom-consul-2.prom-consul.$(NAMESPACE).svc.cluster.local"
+            - "-domain=cluster.local"
+            - "-disable-host-node-id"
+          env:
+            - name: PODIP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          ports:
+            - containerPort: 8500
+              name: ui-port
+            - containerPort: 8400
+              name: alt-port
+            - containerPort: 53
+              name: udp-port
+            - containerPort: 8443
+              name: https-port
+            - containerPort: 8080
+              name: http-port
+            - containerPort: 8301
+              name: serflan
+            - containerPort: 8302
+              name: serfwan
+            - containerPort: 8600
+              name: consuldns
+            - containerPort: 8300
+              name: server
+          resources:
+            limits:
+              cpu: 500m
+              memory: 1Gi
+            requests:
+              cpu: 250m
+              memory: 256Mi
+          securityContext:
+            privileged: false
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+            - name: prom-consul-data
+              mountPath: /consul/data
+      dnsPolicy: ClusterFirst
+      imagePullSecrets:
+        - name: qcloudregistrykey
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      volumes:
+        - name: prom-consul-data
+          secret:
+            defaultMode: 420
+            secretName: prom-consul-data
+  updateStrategy:
+    rollingUpdate:
+      partition: 0
+    type: RollingUpdate
+  volumeClaimTemplates:
+    - metadata:
+        annotations:
+          storageclass.beta.kubernetes.io/is-default-class: cbs
+        name: prom-consul-data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 10Gi
+        storageClassName: cbs
+        volumeMode: Filesystem
+
+---
+apiVersion: apps/v1beta2
+kind: StatefulSet
+metadata:
+  labels:
+    k8s-app: prom-consul-client1
+    qcloud-app: prom-consul-client1
+  name: prom-consul-client1
+  namespace: nmpc-production
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      k8s-app: prom-consul-client1
+      qcloud-app: prom-consul-client1
+  serviceName: prom-consul-client1
+  template:
+    metadata:
+      labels:
+        k8s-app: prom-consul-client1
+        qcloud-app: prom-consul-client1
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: k8s-app
+                    operator: In
+                    values:
+                      - prom-consul-client1
+              topologyKey: kubernetes.io/hostname
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: prom-consul-client1
+          image: docker.io/11expose11/consul:1.8.0
+          imagePullPolicy: IfNotPresent
+          args:
+            - agent
+            - --server=false
+            - --client=0.0.0.0
+            - --retry-join=prom-consul
+          resources:
+            limits:
+              cpu: 500m
+              memory: 1Gi
+            requests:
+              cpu: 250m
+              memory: 256Mi
+          securityContext:
+            privileged: false
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
+      imagePullSecrets:
+        - name: qcloudregistrykey
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+  updateStrategy:
+    rollingUpdate:
+      partition: 0
+    type: RollingUpdate
+
+---
+apiVersion: apps/v1beta2
+kind: StatefulSet
+metadata:
+  labels:
+    k8s-app: prom-consul-client2
+    qcloud-app: prom-consul-client2
+  name: prom-consul-client2
+  namespace: nmpc-production
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      k8s-app: prom-consul-client2
+      qcloud-app: prom-consul-client2
+  serviceName: prom-consul-client2
+  template:
+    metadata:
+      labels:
+        k8s-app: prom-consul-client2
+        qcloud-app: prom-consul-client2
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: k8s-app
+                    operator: In
+                    values:
+                      - prom-consul-client2
+              topologyKey: kubernetes.io/hostname
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: prom-consul-client2
+          image: docker.io/11expose11/consul:1.8.0
+          imagePullPolicy: IfNotPresent
+          args:
+            - agent
+            - --server=false
+            - --client=0.0.0.0
+            - --retry-join=prom-consul
+          resources:
+            limits:
+              cpu: 500m
+              memory: 1Gi
+            requests:
+              cpu: 250m
+              memory: 256Mi
+          securityContext:
+            privileged: false
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
+      imagePullSecrets:
+        - name: qcloudregistrykey
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+  updateStrategy:
+    rollingUpdate:
+      partition: 0
+    type: RollingUpdate
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prom-consul
+  namespace: nmpc-production
+spec:
+  type: NodePort
+  externalTrafficPolicy: Cluster
+  ports:
+    - name: http
+      port: 8500
+      protocol: TCP
+      targetPort: 8500
+    - name: https
+      port: 8443
+      protocol: TCP
+      targetPort: 8443
+    - name: rpc
+      port: 8400
+      protocol: TCP
+      targetPort: 8400
+    - name: serflan-tcp
+      port: 8301
+      protocol: TCP
+      targetPort: 8301
+    - name: serflan-udp
+      port: 8301
+      protocol: UDP
+      targetPort: 8301
+    - name: serfwan-tcp
+      port: 8302
+      protocol: TCP
+      targetPort: 8302
+    - name: serfwan-udp
+      port: 8302
+      protocol: UDP
+      targetPort: 8302
+    - name: server
+      port: 8300
+      protocol: TCP
+      targetPort: 8300
+    - name: consuldns
+      port: 8600
+      protocol: TCP
+      targetPort: 8600
+  selector:
+    k8s-app: prom-consul
+    qcloud-app: prom-consul
+  sessionAffinity: None
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prom-consul-client1
+  namespace: nmpc-production
+spec:
+  type: NodePort
+  externalTrafficPolicy: Cluster
+  ports:
+    - name: http
+      port: 8500
+      protocol: TCP
+      targetPort: 8500
+  selector:
+    k8s-app: prom-consul-client1
+    qcloud-app: prom-consul-client1
+  sessionAffinity: None
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prom-consul-client2
+  namespace: nmpc-production
+spec:
+  type: NodePort
+  externalTrafficPolicy: Cluster
+  ports:
+    - name: http
+      port: 8500
+      protocol: TCP
+      targetPort: 8500
+  selector:
+    k8s-app: prom-consul-client2
+    qcloud-app: prom-consul-client2
+  sessionAffinity: None

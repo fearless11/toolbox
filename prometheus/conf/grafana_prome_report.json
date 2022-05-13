@@ -1,0 +1,1463 @@
+{
+    "annotations": {
+      "list": [
+        {
+          "builtIn": 1,
+          "datasource": "-- Grafana --",
+          "enable": true,
+          "hide": true,
+          "iconColor": "rgba(0, 211, 255, 1)",
+          "name": "Annotations & Alerts",
+          "type": "dashboard"
+        }
+      ]
+    },
+    "editable": true,
+    "gnetId": null,
+    "graphTooltip": 0,
+    "id": 99,
+    "links": [
+      {
+        "icon": "external link",
+        "tags": [],
+        "title": "Nops告警中心",
+        "type": "link",
+        "url": "http://zhiyan.oa.com/log_api/kibana/space/gz-3/app/kibana#/dashboard/34452c20-50c5-11eb-8cb4-ab9c87fe0f26?_g=(refreshInterval:(pause:!t,value:0),time:(from:now%2Fd,mode:quick,to:now%2Fd))&_a=(description:'',filters:!(),fullScreenMode:!f,options:(darkTheme:!f,hidePanelTitles:!f,useMargins:!t),panels:!((embeddableConfig:(),gridData:(h:9,i:'1',w:48,x:0,y:0),id:f1637010-50c4-11eb-8cb4-ab9c87fe0f26,panelIndex:'1',type:visualization,version:'6.8.2'),(embeddableConfig:(),gridData:(h:12,i:'2',w:48,x:0,y:9),id:'245a0c80-50c6-11eb-8cb4-ab9c87fe0f26',panelIndex:'2',type:visualization,version:'6.8.2')),query:(language:lucene,query:''),timeRestore:!f,title:Nops%E5%91%8A%E8%AD%A6%E4%B8%AD%E5%BF%83,viewMode:view)"
+      }
+    ],
+    "panels": [
+      {
+        "collapsed": false,
+        "datasource": null,
+        "gridPos": {
+          "h": 1,
+          "w": 24,
+          "x": 0,
+          "y": 0
+        },
+        "id": 21,
+        "panels": [],
+        "title": "自研交换机容器监控",
+        "type": "row"
+      },
+      {
+        "blendName": "total",
+        "cacheTimeout": null,
+        "colorBackground": false,
+        "colorValue": false,
+        "colors": [
+          "#299c46",
+          "rgba(237, 129, 40, 0.89)",
+          "#d44a3a"
+        ],
+        "datasource": "Prometheus(tke)",
+        "format": "none",
+        "gauge": {
+          "maxValue": 100,
+          "minValue": 0,
+          "show": false,
+          "thresholdLabels": false,
+          "thresholdMarkers": true
+        },
+        "gridPos": {
+          "h": 2,
+          "w": 3,
+          "x": 0,
+          "y": 1
+        },
+        "id": 24,
+        "interval": null,
+        "links": [],
+        "mappingType": 1,
+        "mappingTypes": [
+          {
+            "name": "value to text",
+            "value": 1
+          },
+          {
+            "name": "range to text",
+            "value": 2
+          }
+        ],
+        "maxDataPoints": 100,
+        "nullPointMode": "connected",
+        "nullText": null,
+        "options": {},
+        "postfix": "个",
+        "postfixFontSize": "80%",
+        "prefix": "",
+        "prefixFontSize": "80%",
+        "rangeMaps": [
+          {
+            "from": "null",
+            "text": "N/A",
+            "to": "null"
+          }
+        ],
+        "sparkline": {
+          "fillColor": "rgba(31, 118, 189, 0.18)",
+          "full": false,
+          "lineColor": "rgb(31, 120, 193)",
+          "show": false
+        },
+        "tableColumn": "",
+        "targets": [
+          {
+            "expr": "count(sum by (alias) (prometheus_build_info{selfzone=~\".*prometheus-federate-campus\"}))",
+            "hide": false,
+            "refId": "A"
+          }
+        ],
+        "thresholds": "",
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "监控园区",
+        "type": "farski-blendstat-panel",
+        "valueFontSize": "80%",
+        "valueMaps": [
+          {
+            "op": "=",
+            "text": "N/A",
+            "value": "null"
+          }
+        ],
+        "valueName": "avg"
+      },
+      {
+        "cacheTimeout": null,
+        "columns": [
+          {
+            "text": "Current",
+            "value": "current"
+          }
+        ],
+        "datasource": "Prometheus(tke)",
+        "fontSize": "100%",
+        "gridPos": {
+          "h": 8,
+          "w": 6,
+          "x": 3,
+          "y": 1
+        },
+        "id": 22,
+        "links": [],
+        "options": {},
+        "pageSize": null,
+        "showHeader": true,
+        "sort": {
+          "col": 0,
+          "desc": false
+        },
+        "styles": [
+          {
+            "alias": "Time",
+            "dateFormat": "YYYY-MM-DD HH:mm:ss",
+            "pattern": "Time",
+            "type": "date"
+          },
+          {
+            "alias": "园区",
+            "colorMode": null,
+            "colors": [
+              "rgba(245, 54, 54, 0.9)",
+              "rgba(237, 129, 40, 0.89)",
+              "rgba(50, 172, 45, 0.97)"
+            ],
+            "decimals": 0,
+            "pattern": "Metric",
+            "thresholds": [],
+            "type": "number",
+            "unit": "short"
+          },
+          {
+            "alias": "Prometheus数量",
+            "colorMode": null,
+            "colors": [
+              "rgba(245, 54, 54, 0.9)",
+              "rgba(237, 129, 40, 0.89)",
+              "rgba(50, 172, 45, 0.97)"
+            ],
+            "dateFormat": "YYYY-MM-DD HH:mm:ss",
+            "decimals": 0,
+            "mappingType": 1,
+            "pattern": "Current",
+            "thresholds": [],
+            "type": "number",
+            "unit": "short"
+          }
+        ],
+        "targets": [
+          {
+            "expr": "sum by (alias) (prometheus_build_info{selfzone=~\".*prometheus-federate-campus\"})",
+            "legendFormat": "{{ alias }}",
+            "refId": "A"
+          }
+        ],
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "监控园区情况",
+        "transform": "timeseries_aggregations",
+        "type": "table"
+      },
+      {
+        "cacheTimeout": null,
+        "columns": [
+          {
+            "text": "Current",
+            "value": "current"
+          }
+        ],
+        "datasource": "Prometheus(tke)",
+        "fontSize": "100%",
+        "gridPos": {
+          "h": 8,
+          "w": 7,
+          "x": 9,
+          "y": 1
+        },
+        "id": 25,
+        "links": [],
+        "options": {},
+        "pageSize": null,
+        "showHeader": true,
+        "sort": {
+          "col": null,
+          "desc": false
+        },
+        "styles": [
+          {
+            "alias": "Time",
+            "dateFormat": "YYYY-MM-DD HH:mm:ss",
+            "pattern": "Time",
+            "type": "date"
+          },
+          {
+            "alias": "园区",
+            "colorMode": null,
+            "colors": [
+              "rgba(245, 54, 54, 0.9)",
+              "rgba(237, 129, 40, 0.89)",
+              "rgba(50, 172, 45, 0.97)"
+            ],
+            "decimals": 0,
+            "pattern": "Metric",
+            "thresholds": [],
+            "type": "number",
+            "unit": "short"
+          },
+          {
+            "alias": "cadvisor数量",
+            "colorMode": null,
+            "colors": [
+              "rgba(245, 54, 54, 0.9)",
+              "rgba(237, 129, 40, 0.89)",
+              "rgba(50, 172, 45, 0.97)"
+            ],
+            "dateFormat": "YYYY-MM-DD HH:mm:ss",
+            "decimals": 0,
+            "mappingType": 1,
+            "pattern": "Current",
+            "thresholds": [],
+            "type": "number",
+            "unit": "short"
+          }
+        ],
+        "targets": [
+          {
+            "expr": "sum by (alias) (cadvisor_version_info{selfzone=~\".*prometheus-federate-campus\"})",
+            "legendFormat": "{{ alias }}",
+            "refId": "A"
+          }
+        ],
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "监控设备情况",
+        "transform": "timeseries_aggregations",
+        "type": "table"
+      },
+      {
+        "cacheTimeout": null,
+        "columns": [
+          {
+            "text": "Current",
+            "value": "current"
+          }
+        ],
+        "datasource": "Prometheus(tke)",
+        "fontSize": "100%",
+        "gridPos": {
+          "h": 8,
+          "w": 8,
+          "x": 16,
+          "y": 1
+        },
+        "id": 19,
+        "links": [],
+        "options": {},
+        "pageSize": null,
+        "showHeader": true,
+        "sort": {
+          "col": 0,
+          "desc": false
+        },
+        "styles": [
+          {
+            "alias": "Time",
+            "dateFormat": "YYYY-MM-DD HH:mm:ss",
+            "pattern": "Time",
+            "type": "date"
+          },
+          {
+            "alias": "园区",
+            "colorMode": null,
+            "colors": [
+              "rgba(245, 54, 54, 0.9)",
+              "rgba(237, 129, 40, 0.89)",
+              "rgba(50, 172, 45, 0.97)"
+            ],
+            "decimals": 0,
+            "pattern": "Metric",
+            "thresholds": [],
+            "type": "number",
+            "unit": "short"
+          },
+          {
+            "alias": "数量",
+            "colorMode": null,
+            "colors": [
+              "rgba(245, 54, 54, 0.9)",
+              "rgba(237, 129, 40, 0.89)",
+              "rgba(50, 172, 45, 0.97)"
+            ],
+            "dateFormat": "YYYY-MM-DD HH:mm:ss",
+            "decimals": 0,
+            "mappingType": 1,
+            "pattern": "Current",
+            "thresholds": [],
+            "type": "number",
+            "unit": "short"
+          }
+        ],
+        "targets": [
+          {
+            "expr": "sum by (alias,instance) (prometheus_build_info{selfzone=~\".*prometheus-federate-campus\"})",
+            "legendFormat": "{{ alias }} {{ instance}}",
+            "refId": "A"
+          }
+        ],
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "园区Prometheus情况",
+        "transform": "timeseries_aggregations",
+        "type": "table"
+      },
+      {
+        "blendName": "total",
+        "cacheTimeout": null,
+        "colorBackground": false,
+        "colorValue": false,
+        "colors": [
+          "#299c46",
+          "rgba(237, 129, 40, 0.89)",
+          "#d44a3a"
+        ],
+        "datasource": "Prometheus(tke)",
+        "format": "none",
+        "gauge": {
+          "maxValue": 100,
+          "minValue": 0,
+          "show": false,
+          "thresholdLabels": false,
+          "thresholdMarkers": true
+        },
+        "gridPos": {
+          "h": 3,
+          "w": 3,
+          "x": 0,
+          "y": 3
+        },
+        "id": 27,
+        "interval": null,
+        "links": [],
+        "mappingType": 1,
+        "mappingTypes": [
+          {
+            "name": "value to text",
+            "value": 1
+          },
+          {
+            "name": "range to text",
+            "value": 2
+          }
+        ],
+        "maxDataPoints": 100,
+        "nullPointMode": "connected",
+        "nullText": null,
+        "options": {},
+        "postfix": "个",
+        "postfixFontSize": "80%",
+        "prefix": "",
+        "prefixFontSize": "80%",
+        "rangeMaps": [
+          {
+            "from": "null",
+            "text": "N/A",
+            "to": "null"
+          }
+        ],
+        "sparkline": {
+          "fillColor": "rgba(31, 118, 189, 0.18)",
+          "full": false,
+          "lineColor": "rgb(31, 120, 193)",
+          "show": false
+        },
+        "tableColumn": "",
+        "targets": [
+          {
+            "expr": "count(sum by (alias) (cadvisor_version_info{selfzone=~\".*prometheus-federate-campus\"}))",
+            "hide": false,
+            "refId": "A"
+          }
+        ],
+        "thresholds": "",
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "监控园区模块",
+        "type": "farski-blendstat-panel",
+        "valueFontSize": "80%",
+        "valueMaps": [
+          {
+            "op": "=",
+            "text": "N/A",
+            "value": "null"
+          }
+        ],
+        "valueName": "avg"
+      },
+      {
+        "blendName": "total",
+        "cacheTimeout": null,
+        "colorBackground": false,
+        "colorValue": false,
+        "colors": [
+          "#299c46",
+          "rgba(237, 129, 40, 0.89)",
+          "#d44a3a"
+        ],
+        "datasource": "Prometheus(tke)",
+        "format": "none",
+        "gauge": {
+          "maxValue": 100,
+          "minValue": 0,
+          "show": false,
+          "thresholdLabels": false,
+          "thresholdMarkers": true
+        },
+        "gridPos": {
+          "h": 3,
+          "w": 3,
+          "x": 0,
+          "y": 6
+        },
+        "id": 26,
+        "interval": null,
+        "links": [],
+        "mappingType": 1,
+        "mappingTypes": [
+          {
+            "name": "value to text",
+            "value": 1
+          },
+          {
+            "name": "range to text",
+            "value": 2
+          }
+        ],
+        "maxDataPoints": 100,
+        "nullPointMode": "connected",
+        "nullText": null,
+        "options": {},
+        "postfix": "个",
+        "postfixFontSize": "80%",
+        "prefix": "",
+        "prefixFontSize": "80%",
+        "rangeMaps": [
+          {
+            "from": "null",
+            "text": "N/A",
+            "to": "null"
+          }
+        ],
+        "sparkline": {
+          "fillColor": "rgba(31, 118, 189, 0.18)",
+          "full": false,
+          "lineColor": "rgb(31, 120, 193)",
+          "show": false
+        },
+        "tableColumn": "",
+        "targets": [
+          {
+            "expr": "sum(sum by (alias) (cadvisor_version_info{selfzone=~\".*prometheus-federate-campus\"}))",
+            "refId": "A"
+          }
+        ],
+        "thresholds": "",
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "监控设备",
+        "type": "farski-blendstat-panel",
+        "valueFontSize": "80%",
+        "valueMaps": [
+          {
+            "op": "=",
+            "text": "N/A",
+            "value": "null"
+          }
+        ],
+        "valueName": "avg"
+      },
+      {
+        "collapsed": false,
+        "datasource": null,
+        "gridPos": {
+          "h": 1,
+          "w": 24,
+          "x": 0,
+          "y": 9
+        },
+        "id": 14,
+        "panels": [],
+        "title": "汇总信息",
+        "type": "row"
+      },
+      {
+        "cacheTimeout": null,
+        "colorBackground": false,
+        "colorPostfix": true,
+        "colorPrefix": false,
+        "colorValue": true,
+        "colors": [
+          "#299c46",
+          "rgba(237, 129, 40, 0.89)",
+          "#d44a3a"
+        ],
+        "datasource": "Prometheus(tke)",
+        "format": "none",
+        "gauge": {
+          "maxValue": 100,
+          "minValue": 0,
+          "show": false,
+          "thresholdLabels": false,
+          "thresholdMarkers": true
+        },
+        "gridPos": {
+          "h": 5,
+          "w": 3,
+          "x": 0,
+          "y": 10
+        },
+        "id": 12,
+        "interval": null,
+        "links": [],
+        "mappingType": 1,
+        "mappingTypes": [
+          {
+            "name": "value to text",
+            "value": 1
+          },
+          {
+            "name": "range to text",
+            "value": 2
+          }
+        ],
+        "maxDataPoints": 100,
+        "nullPointMode": "connected",
+        "nullText": null,
+        "options": {},
+        "postfix": "",
+        "postfixFontSize": "70%",
+        "prefix": "",
+        "prefixFontSize": "50%",
+        "rangeMaps": [
+          {
+            "from": "null",
+            "text": "N/A",
+            "to": "null"
+          }
+        ],
+        "sparkline": {
+          "fillColor": "rgba(31, 118, 189, 0.18)",
+          "full": false,
+          "lineColor": "rgb(31, 120, 193)",
+          "show": false,
+          "ymax": null,
+          "ymin": null
+        },
+        "tableColumn": "",
+        "targets": [
+          {
+            "expr": "count(up)",
+            "refId": "A"
+          }
+        ],
+        "thresholds": "",
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "Total",
+        "type": "singlestat",
+        "valueFontSize": "80%",
+        "valueMaps": [
+          {
+            "op": "=",
+            "text": "N/A",
+            "value": "null"
+          }
+        ],
+        "valueName": "current"
+      },
+      {
+        "cacheTimeout": null,
+        "colorBackground": false,
+        "colorValue": true,
+        "colors": [
+          "#299c46",
+          "#37872D",
+          "#37872D"
+        ],
+        "datasource": "Prometheus(tke)",
+        "format": "short",
+        "gauge": {
+          "maxValue": 100,
+          "minValue": 0,
+          "show": false,
+          "thresholdLabels": false,
+          "thresholdMarkers": true
+        },
+        "gridPos": {
+          "h": 5,
+          "w": 3,
+          "x": 3,
+          "y": 10
+        },
+        "id": 5,
+        "interval": null,
+        "links": [],
+        "mappingType": 1,
+        "mappingTypes": [
+          {
+            "name": "value to text",
+            "value": 1
+          },
+          {
+            "name": "range to text",
+            "value": 2
+          }
+        ],
+        "maxDataPoints": 100,
+        "nullPointMode": "connected",
+        "nullText": null,
+        "options": {},
+        "postfix": "",
+        "postfixFontSize": "50%",
+        "prefix": "",
+        "prefixFontSize": "50%",
+        "rangeMaps": [
+          {
+            "from": "null",
+            "text": "N/A",
+            "to": "null"
+          }
+        ],
+        "sparkline": {
+          "fillColor": "rgba(31, 118, 189, 0.18)",
+          "full": false,
+          "lineColor": "rgb(31, 120, 193)",
+          "show": false,
+          "ymax": null,
+          "ymin": null
+        },
+        "tableColumn": "",
+        "targets": [
+          {
+            "expr": "count(up{job=\"mongodb\"})",
+            "format": "time_series",
+            "hide": false,
+            "refId": "A"
+          }
+        ],
+        "thresholds": "",
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "Mongo",
+        "type": "singlestat",
+        "valueFontSize": "80%",
+        "valueMaps": [
+          {
+            "op": "=",
+            "text": "N/A",
+            "value": "null"
+          }
+        ],
+        "valueName": "current"
+      },
+      {
+        "cacheTimeout": null,
+        "colorBackground": false,
+        "colorValue": true,
+        "colors": [
+          "#299c46",
+          "#37872D",
+          "#37872D"
+        ],
+        "datasource": "Prometheus(tke)",
+        "format": "none",
+        "gauge": {
+          "maxValue": 100,
+          "minValue": 0,
+          "show": false,
+          "thresholdLabels": false,
+          "thresholdMarkers": true
+        },
+        "gridPos": {
+          "h": 5,
+          "w": 3,
+          "x": 6,
+          "y": 10
+        },
+        "id": 2,
+        "interval": null,
+        "links": [],
+        "mappingType": 1,
+        "mappingTypes": [
+          {
+            "name": "value to text",
+            "value": 1
+          },
+          {
+            "name": "range to text",
+            "value": 2
+          }
+        ],
+        "maxDataPoints": 100,
+        "nullPointMode": "connected",
+        "nullText": null,
+        "options": {},
+        "postfix": "",
+        "postfixFontSize": "50%",
+        "prefix": "",
+        "prefixFontSize": "50%",
+        "rangeMaps": [
+          {
+            "from": "null",
+            "text": "N/A",
+            "to": "null"
+          }
+        ],
+        "sparkline": {
+          "fillColor": "rgba(31, 118, 189, 0.18)",
+          "full": false,
+          "lineColor": "rgb(31, 120, 193)",
+          "show": false,
+          "ymax": null,
+          "ymin": null
+        },
+        "tableColumn": "",
+        "targets": [
+          {
+            "expr": "count(mysql_up)",
+            "refId": "A"
+          }
+        ],
+        "thresholds": "",
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "MySQL",
+        "type": "singlestat",
+        "valueFontSize": "80%",
+        "valueMaps": [
+          {
+            "op": "=",
+            "text": "N/A",
+            "value": "null"
+          }
+        ],
+        "valueName": "current"
+      },
+      {
+        "cacheTimeout": null,
+        "colorBackground": false,
+        "colorValue": true,
+        "colors": [
+          "#299c46",
+          "#37872D",
+          "#37872D"
+        ],
+        "datasource": "Prometheus(tke)",
+        "format": "short",
+        "gauge": {
+          "maxValue": 100,
+          "minValue": 0,
+          "show": false,
+          "thresholdLabels": false,
+          "thresholdMarkers": true
+        },
+        "gridPos": {
+          "h": 5,
+          "w": 3,
+          "x": 9,
+          "y": 10
+        },
+        "id": 4,
+        "interval": null,
+        "links": [],
+        "mappingType": 1,
+        "mappingTypes": [
+          {
+            "name": "value to text",
+            "value": 1
+          },
+          {
+            "name": "range to text",
+            "value": 2
+          }
+        ],
+        "maxDataPoints": 100,
+        "nullPointMode": "connected",
+        "nullText": null,
+        "options": {},
+        "postfix": "",
+        "postfixFontSize": "50%",
+        "prefix": "",
+        "prefixFontSize": "50%",
+        "rangeMaps": [
+          {
+            "from": "null",
+            "text": "N/A",
+            "to": "null"
+          }
+        ],
+        "sparkline": {
+          "fillColor": "rgba(31, 118, 189, 0.18)",
+          "full": false,
+          "lineColor": "rgb(31, 120, 193)",
+          "show": false,
+          "ymax": null,
+          "ymin": null
+        },
+        "tableColumn": "",
+        "targets": [
+          {
+            "expr": "count(kafka_brokers{job=\"kafka\"}) - 1 ",
+            "format": "time_series",
+            "hide": false,
+            "refId": "A"
+          }
+        ],
+        "thresholds": "",
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "Kafka",
+        "type": "singlestat",
+        "valueFontSize": "80%",
+        "valueMaps": [
+          {
+            "op": "=",
+            "text": "N/A",
+            "value": "null"
+          }
+        ],
+        "valueName": "current"
+      },
+      {
+        "cacheTimeout": null,
+        "colorBackground": false,
+        "colorValue": true,
+        "colors": [
+          "#299c46",
+          "#37872D",
+          "#37872D"
+        ],
+        "datasource": "Prometheus(tke)",
+        "format": "short",
+        "gauge": {
+          "maxValue": 100,
+          "minValue": 0,
+          "show": false,
+          "thresholdLabels": false,
+          "thresholdMarkers": true
+        },
+        "gridPos": {
+          "h": 5,
+          "w": 3,
+          "x": 12,
+          "y": 10
+        },
+        "id": 15,
+        "interval": null,
+        "links": [],
+        "mappingType": 1,
+        "mappingTypes": [
+          {
+            "name": "value to text",
+            "value": 1
+          },
+          {
+            "name": "range to text",
+            "value": 2
+          }
+        ],
+        "maxDataPoints": 100,
+        "nullPointMode": "connected",
+        "nullText": null,
+        "options": {},
+        "postfix": "",
+        "postfixFontSize": "50%",
+        "prefix": "",
+        "prefixFontSize": "50%",
+        "rangeMaps": [
+          {
+            "from": "null",
+            "text": "N/A",
+            "to": "null"
+          }
+        ],
+        "sparkline": {
+          "fillColor": "rgba(31, 118, 189, 0.18)",
+          "full": false,
+          "lineColor": "rgb(31, 120, 193)",
+          "show": false,
+          "ymax": null,
+          "ymin": null
+        },
+        "tableColumn": "",
+        "targets": [
+          {
+            "expr": "count(up{job=\"self_switch_container\",instance=~\".*8081\"})",
+            "format": "time_series",
+            "hide": false,
+            "refId": "A"
+          }
+        ],
+        "thresholds": "",
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "自研交换机容器",
+        "type": "singlestat",
+        "valueFontSize": "80%",
+        "valueMaps": [
+          {
+            "op": "=",
+            "text": "N/A",
+            "value": "null"
+          }
+        ],
+        "valueName": "current"
+      },
+      {
+        "aliasColors": {},
+        "breakPoint": "50%",
+        "cacheTimeout": null,
+        "combine": {
+          "label": "Others",
+          "threshold": 0
+        },
+        "datasource": "Prometheus(tke)",
+        "fontSize": "80%",
+        "format": "short",
+        "gridPos": {
+          "h": 10,
+          "w": 8,
+          "x": 15,
+          "y": 10
+        },
+        "id": 10,
+        "interval": null,
+        "legend": {
+          "percentage": false,
+          "show": true,
+          "sort": "current",
+          "sortDesc": true,
+          "values": true
+        },
+        "legendType": "Right side",
+        "links": [],
+        "maxDataPoints": 1,
+        "nullPointMode": "connected",
+        "options": {},
+        "pieType": "pie",
+        "strokeWidth": 1,
+        "targets": [
+          {
+            "expr": "sum (up) by (job)",
+            "format": "time_series",
+            "legendFormat": "{{ job }}",
+            "refId": "A"
+          }
+        ],
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "已接入监控对象",
+        "type": "grafana-piechart-panel",
+        "valueName": "current"
+      },
+      {
+        "cacheTimeout": null,
+        "colorBackground": false,
+        "colorValue": true,
+        "colors": [
+          "#299c46",
+          "#37872D",
+          "#37872D"
+        ],
+        "datasource": "Prometheus(tke)",
+        "format": "short",
+        "gauge": {
+          "maxValue": 100,
+          "minValue": 0,
+          "show": false,
+          "thresholdLabels": false,
+          "thresholdMarkers": true
+        },
+        "gridPos": {
+          "h": 5,
+          "w": 3,
+          "x": 0,
+          "y": 15
+        },
+        "id": 17,
+        "interval": null,
+        "links": [],
+        "mappingType": 1,
+        "mappingTypes": [
+          {
+            "name": "value to text",
+            "value": 1
+          },
+          {
+            "name": "range to text",
+            "value": 2
+          }
+        ],
+        "maxDataPoints": 100,
+        "nullPointMode": "connected",
+        "nullText": null,
+        "options": {},
+        "postfix": "",
+        "postfixFontSize": "50%",
+        "prefix": "",
+        "prefixFontSize": "50%",
+        "rangeMaps": [
+          {
+            "from": "null",
+            "text": "N/A",
+            "to": "null"
+          }
+        ],
+        "sparkline": {
+          "fillColor": "rgba(31, 118, 189, 0.18)",
+          "full": false,
+          "lineColor": "rgb(31, 120, 193)",
+          "show": false,
+          "ymax": null,
+          "ymin": null
+        },
+        "tableColumn": "",
+        "targets": [
+          {
+            "expr": "count(up{job=\"container-unify\"})",
+            "format": "time_series",
+            "hide": false,
+            "refId": "A"
+          }
+        ],
+        "thresholds": "",
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "Unify容器",
+        "type": "singlestat",
+        "valueFontSize": "80%",
+        "valueMaps": [
+          {
+            "op": "=",
+            "text": "N/A",
+            "value": "null"
+          }
+        ],
+        "valueName": "current"
+      },
+      {
+        "cacheTimeout": null,
+        "colorBackground": false,
+        "colorValue": true,
+        "colors": [
+          "#299c46",
+          "#37872D",
+          "#37872D"
+        ],
+        "datasource": "Prometheus(tke)",
+        "format": "short",
+        "gauge": {
+          "maxValue": 100,
+          "minValue": 0,
+          "show": false,
+          "thresholdLabels": false,
+          "thresholdMarkers": true
+        },
+        "gridPos": {
+          "h": 5,
+          "w": 3,
+          "x": 3,
+          "y": 15
+        },
+        "id": 8,
+        "interval": null,
+        "links": [],
+        "mappingType": 1,
+        "mappingTypes": [
+          {
+            "name": "value to text",
+            "value": 1
+          },
+          {
+            "name": "range to text",
+            "value": 2
+          }
+        ],
+        "maxDataPoints": 100,
+        "nullPointMode": "connected",
+        "nullText": null,
+        "options": {},
+        "postfix": "",
+        "postfixFontSize": "50%",
+        "prefix": "",
+        "prefixFontSize": "50%",
+        "rangeMaps": [
+          {
+            "from": "null",
+            "text": "N/A",
+            "to": "null"
+          }
+        ],
+        "sparkline": {
+          "fillColor": "rgba(31, 118, 189, 0.18)",
+          "full": false,
+          "lineColor": "rgb(31, 120, 193)",
+          "show": false,
+          "ymax": null,
+          "ymin": null
+        },
+        "tableColumn": "",
+        "targets": [
+          {
+            "expr": "count(up{alias=\"container_sdncontroller\",job=\"prometheus\"})",
+            "format": "time_series",
+            "hide": false,
+            "refId": "A"
+          }
+        ],
+        "thresholds": "",
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "骨干网控制器容器",
+        "type": "singlestat",
+        "valueFontSize": "80%",
+        "valueMaps": [
+          {
+            "op": "=",
+            "text": "N/A",
+            "value": "null"
+          }
+        ],
+        "valueName": "current"
+      },
+      {
+        "cacheTimeout": null,
+        "colorBackground": false,
+        "colorValue": true,
+        "colors": [
+          "#299c46",
+          "#37872D",
+          "#37872D"
+        ],
+        "datasource": "Prometheus(tke)",
+        "format": "short",
+        "gauge": {
+          "maxValue": 100,
+          "minValue": 0,
+          "show": false,
+          "thresholdLabels": false,
+          "thresholdMarkers": true
+        },
+        "gridPos": {
+          "h": 5,
+          "w": 3,
+          "x": 6,
+          "y": 15
+        },
+        "id": 7,
+        "interval": null,
+        "links": [],
+        "mappingType": 1,
+        "mappingTypes": [
+          {
+            "name": "value to text",
+            "value": 1
+          },
+          {
+            "name": "range to text",
+            "value": 2
+          }
+        ],
+        "maxDataPoints": 100,
+        "nullPointMode": "connected",
+        "nullText": null,
+        "options": {},
+        "postfix": "",
+        "postfixFontSize": "50%",
+        "prefix": "",
+        "prefixFontSize": "50%",
+        "rangeMaps": [
+          {
+            "from": "null",
+            "text": "N/A",
+            "to": "null"
+          }
+        ],
+        "sparkline": {
+          "fillColor": "rgba(31, 118, 189, 0.18)",
+          "full": false,
+          "lineColor": "rgb(31, 120, 193)",
+          "show": false,
+          "ymax": null,
+          "ymin": null
+        },
+        "tableColumn": "",
+        "targets": [
+          {
+            "expr": "count(node_exporter_build_info{alias=\"node_sdncontroller\"})",
+            "format": "time_series",
+            "hide": false,
+            "refId": "A"
+          }
+        ],
+        "thresholds": "",
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "骨干网控制器主机",
+        "type": "singlestat",
+        "valueFontSize": "80%",
+        "valueMaps": [
+          {
+            "op": "=",
+            "text": "N/A",
+            "value": "null"
+          }
+        ],
+        "valueName": "current"
+      },
+      {
+        "cacheTimeout": null,
+        "colorBackground": false,
+        "colorValue": true,
+        "colors": [
+          "#299c46",
+          "#37872D",
+          "#37872D"
+        ],
+        "datasource": "Prometheus(tke)",
+        "format": "short",
+        "gauge": {
+          "maxValue": 100,
+          "minValue": 0,
+          "show": false,
+          "thresholdLabels": false,
+          "thresholdMarkers": true
+        },
+        "gridPos": {
+          "h": 5,
+          "w": 3,
+          "x": 9,
+          "y": 15
+        },
+        "id": 3,
+        "interval": null,
+        "links": [],
+        "mappingType": 1,
+        "mappingTypes": [
+          {
+            "name": "value to text",
+            "value": 1
+          },
+          {
+            "name": "range to text",
+            "value": 2
+          }
+        ],
+        "maxDataPoints": 100,
+        "nullPointMode": "connected",
+        "nullText": null,
+        "options": {},
+        "postfix": "",
+        "postfixFontSize": "50%",
+        "prefix": "",
+        "prefixFontSize": "50%",
+        "rangeMaps": [
+          {
+            "from": "null",
+            "text": "N/A",
+            "to": "null"
+          }
+        ],
+        "sparkline": {
+          "fillColor": "rgba(31, 118, 189, 0.18)",
+          "full": false,
+          "lineColor": "rgb(31, 120, 193)",
+          "show": false,
+          "ymax": null,
+          "ymin": null
+        },
+        "tableColumn": "",
+        "targets": [
+          {
+            "expr": "count(sum by (addr) (redis_up{job=\"redis\"}))",
+            "format": "time_series",
+            "hide": false,
+            "refId": "A"
+          }
+        ],
+        "thresholds": "",
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "Redis",
+        "type": "singlestat",
+        "valueFontSize": "80%",
+        "valueMaps": [
+          {
+            "op": "=",
+            "text": "N/A",
+            "value": "null"
+          }
+        ],
+        "valueName": "current"
+      },
+      {
+        "cacheTimeout": null,
+        "colorBackground": false,
+        "colorValue": true,
+        "colors": [
+          "#299c46",
+          "#37872D",
+          "#37872D"
+        ],
+        "datasource": "Prometheus(tke)",
+        "format": "short",
+        "gauge": {
+          "maxValue": 100,
+          "minValue": 0,
+          "show": false,
+          "thresholdLabels": false,
+          "thresholdMarkers": true
+        },
+        "gridPos": {
+          "h": 5,
+          "w": 3,
+          "x": 12,
+          "y": 15
+        },
+        "id": 16,
+        "interval": null,
+        "links": [],
+        "mappingType": 1,
+        "mappingTypes": [
+          {
+            "name": "value to text",
+            "value": 1
+          },
+          {
+            "name": "range to text",
+            "value": 2
+          }
+        ],
+        "maxDataPoints": 100,
+        "nullPointMode": "connected",
+        "nullText": null,
+        "options": {},
+        "postfix": "",
+        "postfixFontSize": "50%",
+        "prefix": "",
+        "prefixFontSize": "50%",
+        "rangeMaps": [
+          {
+            "from": "null",
+            "text": "N/A",
+            "to": "null"
+          }
+        ],
+        "sparkline": {
+          "fillColor": "rgba(31, 118, 189, 0.18)",
+          "full": false,
+          "lineColor": "rgb(31, 120, 193)",
+          "show": false,
+          "ymax": null,
+          "ymin": null
+        },
+        "tableColumn": "",
+        "targets": [
+          {
+            "expr": "count(up{job=\"business\"})",
+            "format": "time_series",
+            "hide": false,
+            "refId": "A"
+          }
+        ],
+        "thresholds": "",
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "业务",
+        "type": "singlestat",
+        "valueFontSize": "80%",
+        "valueMaps": [
+          {
+            "op": "=",
+            "text": "0",
+            "value": "null"
+          },
+          {
+            "op": "=",
+            "text": "0",
+            "value": "[]"
+          }
+        ],
+        "valueName": "current"
+      }
+    ],
+    "refresh": false,
+    "schemaVersion": 20,
+    "style": "dark",
+    "tags": [],
+    "templating": {
+      "list": []
+    },
+    "time": {
+      "from": "now-5m",
+      "to": "now"
+    },
+    "timepicker": {
+      "refresh_intervals": [
+        "5s",
+        "10s",
+        "30s",
+        "1m",
+        "5m",
+        "15m",
+        "30m",
+        "1h",
+        "2h",
+        "1d"
+      ]
+    },
+    "timezone": "",
+    "title": "监控运营",
+    "uid": "7HOADiHGk",
+    "version": 118
+  }

@@ -65,7 +65,7 @@ awk_patterns(){
 
     # 统计单词出现次数，原文件每行一个单词
     cat /tmp/a | awk '{count[$1]++} END{ for(i in count) print i,count[i] }'
-    
+
 }
 
 ###### 条件声明
@@ -94,7 +94,6 @@ awk_condition(){
 }
 
 ###### 函数
-
 # substr(s, i [, n])  # 源s，i起始位置 ； 从第i位截取s
 # match(s, r [, a])   # 源字段s， 正则r， 匹配后存入数组a
 awk_function(){

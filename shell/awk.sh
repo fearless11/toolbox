@@ -3,7 +3,8 @@
 # auth: fearless11
 # desc: awk
 
-# awk是一个面向行的文本处理工具
+
+# awk是一个面向列的文本处理工具
 # awk 模式 动作
 
 ###### 变量
@@ -52,7 +53,7 @@ awk_var(){
 # (pattern)
 # ! pattern
 # pattern1, pattern2
-awk_patterns(){
+awk_pattern(){
     # BEGIN在执行前操作一次，设置分隔符及打印开始
     awk 'BEGIN{ FS=":" ; OFS="@"; print "====begin==="} {print $1,$2}' /tmp/password 
     # END在执行后操作一次，打印结束
@@ -104,4 +105,6 @@ awk_function(){
     sleep 60 && 
     a1=`ifconfig eth1 | awk '/RX bytes/ {print substr($2,7)}'` && 
     echo "($a1-$a)/60" | bc 
+    # 替换文本开头空格
+    awk '{sub(/^[ \t]+/,""); print $0}' /tmp/a
 }

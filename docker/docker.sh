@@ -27,6 +27,7 @@ uninstall() {
 
 start() {
     systemctl start docker
+    systemctl enable docker
 }
 
 stop() {

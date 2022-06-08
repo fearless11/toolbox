@@ -85,9 +85,175 @@ Prometheus 是的一套开源监控告警方案，最初2012年由SoundCloud公�
 - 如何查询冷数据？  实现query的API查询，可优化缓存TSDB增加索引，可优化对象存储请求
 - 如何提高查询大时区数据速度？  压缩和降低采样频率
 
+### 配置使用
+
+- check rules
+```sh
+go get github.com/prometheus/prometheus/cmd/promtool
+promtool check rules /path/to/example.rules.yml
+```
+- recording rules
+```yaml
+# 提前计算保存最新结果，用于查询，适用于大屏，注意时间间隔
+groups:
+  - name: example-recording-rules
+    rules:
+    - record: job:http_inprogress_requests:sum  # recording 冒号
+      expr: sum(http_inprogress_requests) by (job)
+```
+
+- alerting rules
+```yaml
+# 告警策略触发后发送给alertmanager
+groups:
+- name: example-alerting-rules
+  rules:
+  - alert: InstanceDown
+    expr: up == 0
+    for: 5m  # alert的expr触发后，firing前的等待时间
+    labels:  # 添加label,存在的key将会被覆盖
+      severity: page
+    annotations:
+      summary: "Instance {{ $labels.instance }} down"
+      description: "{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 5 minutes."
+```
+
+- PromeQL
+```sh
+# 非生产环境的GET请求量
+http_requests_total{environment=~"testing|development",method!="GET"}
+
+# 两分钟内cpu的增长率
+increase(node_cpu[2m]) / 120   
+
+# 两分钟内平均增长率，出现"长尾问题"：某个瞬时cpu100%时无法体现
+rate(node_cpu[2m])
+
+# 两分钟内瞬时增长率
+irate(node_cpu[2m])
+
+# 一周前每5分钟的平均请求速率
+rate(http_requests_total[5m] offset 1w)
+
+# 不同pod的http的总请求
+sum(http_requests_total) by (pod)
+
+# 获取前5的请求量
+topk(5,http_request_total)
+```
+
+- Prometheus API
+```sh
+# 重载
+curl -XPOST  http://localhost:9090/-/reload
+
+# 查询POST方法的请求情况
+curl -XGET http://prometheus.oa.com/api/v1/query?query=http_requests_total{method="post"} | jq | more
+```
+
+- push gateway
+```sh
+cat <<EOF | curl --data-binary @- http://127.0.0.1:9091/metrics/job/some_job/instance/some_instance
+# TYPE some_metric counter
+some_metric{label="val1"} 42
+# TYPE another_metric gauge
+# HELP another_metric Just an example.
+another_metric 2398.283
+EOF
+```
+
+- relabel_config解释
+```yaml
+# source_labels: [labelName1,labelName2]  原始label的值
+# separator: ;  用于连接上面多个label的值分割符
+# target_label: newLabelName  新的label的名字
+# regex: (.*)  正则匹配label的值
+# replacement:  $1   # 正则分组后的值写入targe_label
+# action: replace｜keep｜drop｜labelmap｜labeldrop｜labelkeep  # 正则匹配后的操作
+# modulus: 4  # 经过hash计算label的值后保留几位
+
+# 连接两个label的值作为新的label 用逗号隔开
+relabel_configs:
+   - source_labels:  ["__meta_consul_dc","__meta_consul_service"]
+     separator: ,
+     target_label: "dc_service"
+
+# 白名单： 只保留包含匹配label的数据，其余的丢弃
+relabel_configs:
+- source_labels:  ["__meta_consul_dc"]
+  regex: "dc1"
+  action: keep
+
+# 黑名单： 只丢弃包含匹配label的数据，其余的保留
+relabel_configs:
+- source_labels:  ["__meta_consul_dc"]
+  regex: "dc1"
+  action: drop
+
+# label名匹配生成： 增则匹配的内容作为新的label，值为新标签的值
+# 如 __meta_kubernetes_node_label_aaa  prometheus 则新label标签为 aaa prometheus
+relabel_configs:
+- action: labelmap
+  regex: __meta_kubernetes_node_label_(.+)
+
+# 黑名单： 包含正则内容为label的标签丢弃，其余保留
+relabel_configs:
+  - regex: label_should_drop_(.+)
+    action: labeldrop
+
+# 白名单： 包含正则内容为label的标签保留，其余丢弃
+relabel_configs:
+  - regex: label_should_drop_(.+)
+    action: labeldrop
+```
+
+- metric_relabel_configs
+```yaml
+# Drop unnecessary metrics
+- job_name: cadvisor
+  ...
+  metric_relabel_configs:
+  - source_labels: [__name__]
+  regex: '(container_tasks_state|container_memory_failures_total)'
+  action: drop
+
+# Drop unnecessary time-series
+- job_name: cadvisor
+  ...
+  metric_relabel_configs:
+  - source_labels: [id]
+    regex: '/system.slice/var-lib-docker-containers.*-shm.mount'
+    action: drop
+  - source_labels: [container_label_JenkinsId]
+    regex: '.+'
+    action: drop  
+
+# Drop sensitive or unwanted labels from the metrics
+- job_name: cadvisor
+  ...
+  metric_relabel_configs:
+  - regex: 'container_label_com_amazonaws_ecs_task_arn'
+    action: labeldrop
+
+# Amend修改 label format of the final metrics
+- job_name: cadvisor
+  ...
+  metric_relabel_configs:
+  - source_labels: [image]
+    regex: '.*/(.*)'
+    replacement: '$1'
+    target_label: id
+  - source_labels: [service]
+    regex: 'ecs-.*:ecs-([a-z]+-*[a-z]*).*:[0-9]+'
+    replacement: '$1'
+    target_label: service
+```
+
 ## 资料
 
 - [promtheus.io](https://prometheus.io/)
+- [Prometheus-configure](https://prometheus.io/docs/prometheus/latest/configuration/recording_rules/)
+- [prometheus-configure-example](https://github.com/prometheus/prometheus/blob/release-2.15/config/testdata/conf.good.yml)
 - [PromeQL-query](https://prometheus.io/docs/prometheus/latest/querying/basics/)
 - [google-正则语法](https://github.com/google/re2/wiki/Syntax)
 - [Prometheus实战](https://www.bookstack.cn/read/prometheus_practice/ha-prometheus.md)

@@ -1,47 +1,75 @@
 groups:
-- name: node-crm
-  rules:
-  - alert: hostCpuUsageAlert
-    expr: 1 - avg(irate(node_cpu_seconds_total{alias="node-crm",mode="idle"}[30m])) by (instance) > 0.9
-    for: 3m
-    labels:
-      level: critical
-    annotations:
-      summary: "Instance {{ $labels.instance }} CPU usage high"
-      description: "{{ $labels.instance }} CPU usage above 90% (current value: {{ $value }})"
+  - name: node-crm
+    rules:
+      - alert: hostCpuUsageAlert
+        expr: 1 - avg(irate(node_cpu_seconds_total{alias="node-crm",mode="idle"}[30m])) by (instance) > 0.9
+        for: 3m
+        labels:
+          level: critical
+        annotations:
+          summary: "Instance {{ $labels.instance }} CPU usage high"
+          description: "{{ $labels.instance }} CPU usage above 90% (current value: {{ $value }})"
 
-  - alert: hostMemUsageAlert
-    expr: (1 - (node_memory_MemAvailable_bytes{alias="node-crm"} / (node_memory_MemTotal_bytes{alias="node-crm"})))* 100 > 90
-    for: 3m
-    labels:
-      level: critical
-    annotations:
-      summary: "Instance {{ $labels.instance }} MEM usage high"
-      description: "{{ $labels.instance }} MEM usage above 90% (current value: {{ $value }})"
+      - alert: hostMemUsageAlert
+        expr: (1 - (node_memory_MemAvailable_bytes{alias="node-crm"} / (node_memory_MemTotal_bytes{alias="node-crm"})))* 100 > 90
+        for: 3m
+        labels:
+          level: critical
+        annotations:
+          summary: "Instance {{ $labels.instance }} MEM usage high"
+          description: "{{ $labels.instance }} MEM usage above 90% (current value: {{ $value }})"
 
-  - alert: InstanceDown
-    expr: up{alias="node-crm"} == 0
-    for: 2m
-    labels:
-      level: critical
-    annotations:
-      summary: "Instance {{ $labels.instance }} down"
-      description: "{{ $labels.instance }} can not access for more than 2 minutes."
+      - alert: InstanceDown
+        expr: up{alias="node-crm"} == 0
+        for: 2m
+        labels:
+          level: critical
+        annotations:
+          summary: "Instance {{ $labels.instance }} down"
+          description: "{{ $labels.instance }} can not access for more than 2 minutes."
 
-  - alert: DiskUsageAlert
-    expr: 1-(node_filesystem_free_bytes{alias="node-crm",fstype=~"ext4|xfs",mountpoint=~"/|/data|/usr/local|/data1"} / node_filesystem_size_bytes{alias="node-crm",fstype=~"ext4|xfs"}) > 0.95
-    for: 3m
-    labels:
-      level: critical
-    annotations:
-      summary: "Instance {{ $labels.instance }} DiskUsage high"
-      description: "{{ $labels.instance }} {{ $labels.mountpoint }} usage above 80% (current value: {{ $value }})"
-  
-  - alert: hostLoad15Alert
-    expr: node_load15{alias="node-crm"} > 80
-    for: 3m
-    labels:
-      level: critical
-    annotations:
-      summary: "Instance {{ $labels.instance }} Load15 high"
-      description: "{{ $labels.instance }} loadaverage for 15min above 80 (current value: {{ $value }})"
+      - alert: DiskUsageAlert
+        expr: 1-(node_filesystem_free_bytes{alias="node-crm",fstype=~"ext4|xfs",mountpoint=~"/|/data|/usr/local|/data1"} / node_filesystem_size_bytes{alias="node-crm",fstype=~"ext4|xfs"}) > 0.95
+        for: 3m
+        labels:
+          level: critical
+        annotations:
+          summary: "Instance {{ $labels.instance }} DiskUsage high"
+          description: "{{ $labels.instance }} {{ $labels.mountpoint }} usage above 80% (current value: {{ $value }})"
+
+      - alert: hostLoad15Alert
+        expr: node_load15{alias="node-crm"} > 80
+        for: 3m
+        labels:
+          level: critical
+        annotations:
+          summary: "Instance {{ $labels.instance }} Load15 high"
+          description: "{{ $labels.instance }} loadaverage for 15min above 80 (current value: {{ $value }})"
+
+      - alert: HostPartitionUsageProblem # linux disk usage
+        expr: sum ( node_filesystem_avail_bytes{fstype !~ "rootfs|selinuxfs"}  / node_filesystem_size_bytes{fstype !~ "rootfs|selinuxfs"} * 100  < 10 ) by (instance,mountpoint)
+        for: 5m
+        labels:
+          level: CRITICAL
+        annotations:
+          msg: "{{ $labels.instance }} {{ $labels.mountpoint }} partition is not enough,free space {{ $value }}%"
+
+      - alert: WindosDiskUsageProblem # windows disk usage
+        expr: sum (100 - (wmi_logical_disk_free_bytes / wmi_logical_disk_size_bytes) * 100)  by (volume) > 80
+        for: 5m
+        labels:
+          level: CRITICAL
+        annotations:
+          msg: "{{ $labels.instance }} {{ $labels.mountpoint }} partition is not enough,free space {{ $value }}%"
+
+      - record: node_network_receive_bit # define template
+        expr: sum ((node_network_receive_bytes_total{device!~"lo"} - node_network_receive_bytes_total{device!~"lo"} offset 1m ) / 8 / 1024 /1024)  by (device,instance)
+
+      - alert: HostInTrafficProblem # traffic
+        expr: node_network_receive_bit > 200 # use template
+
+      - record: node_network_transmit_bit
+        expr: sum ((node_network_transmit_bytes_total{device!~"lo"} - node_network_transmit_bytes_total{device!~"lo"} offset 1m ) / 8 / 1024 /1024)  by (device,instance)
+
+      - alert: HostOutTrafficProblem
+        expr: node_network_transmit_bit > 200

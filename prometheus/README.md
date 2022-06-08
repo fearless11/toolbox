@@ -22,6 +22,13 @@ Prometheus 是的一套开源监控告警方案，最初2012年由SoundCloud公�
 - alertmanager: 处理告警的组件
 - grafana: 数据可视化组件
 
+## 功能
+`数据采集 -- 数据存储 -- 告警与可视化`
+- 数据采集：exporter/pushgateway提供HTTP接口让Prometheus采集监控数据
+- 数据存储：默认是本地存储，可支持远程写
+- 数据告警：支持按维度、时间收敛，支持临时屏蔽，支持写PromeQL实现环比/同比
+- 数据可视化：grafana支持Promtheus数据源，支持用PromeQL写复杂的查询语句
+
 ## 概念
 - DATA MODEL：数据模型，由metric指标和labels标签KV组成，命名规则`[a-zA-Z_:][a-zA-Z0-9_:]*`，如 `http_requests_total{ method = "post"} 500`
 - Metric types：指标类型即数据的类型，四种：counter只增不减（如访问量）、gauge可增可减（如温度）、histograme计算一段内时间数据所在范围的量（如95%、99%的响应耗时）、summary计算一段内时间数据所在范围的百分比（如95%、99%的响应耗时百分比）
@@ -33,7 +40,9 @@ Prometheus 是的一套开源监控告警方案，最初2012年由SoundCloud公�
 - 适用：记录基于时间序列的数据，架构可靠，方便部署。比如：服务器监控、微服务监控。
 - 不适应：数据要求100%准确的数据，比如：金融相关的请求量计费。
 
-## 选型考虑 -- 功能是否满足、生态是否完善、社区是否活跃、是否灵活、维护是否方便、性能是否强大
+## 选型考虑 
+
+`功能是否满足、生态是否完善、社区是否活跃、是否灵活、维护是否方便、性能是否强大`
 
 - 成熟的社区支持。Prometheus是开源监控软件且社区活跃，很好的与云原生环境搭配。
 - 完善的生态。开箱即用的组件，提供了多种语言的客户端SDK。
@@ -43,7 +52,7 @@ Prometheus 是的一套开源监控告警方案，最初2012年由SoundCloud公�
 - 强大的查询语言PromQL。支持对数据查询、计算、聚合、告警。
 - 高性能。Prometheus单一实例即可处理数以百计的监控指标，每秒处理数十万的数据。
 
-## 实践落地QA
+## 实践落地
 
 ### 数据流
 
@@ -53,9 +62,8 @@ Prometheus 是的一套开源监控告警方案，最初2012年由SoundCloud公�
 - prometheus -- thanos -- grafana （视图）
 - prometheus -- alertmanger（告警）
 
-## 高可用方案
+### 高可用
 
-- Thanos: 
 - Thanos Query: 实现了 Prometheus API，将来自下游组件提供的数据进行聚合最终返回给查询数据的 client
 - Thanos Sidecar: 连接 Prometheus，将其数据提供给 Thanos Query 查询，并且/或者将其上传到对象存储，以供长期存储
 - Thanos Store Gateway: 将对象存储的数据暴露给 Thanos Query 去查询

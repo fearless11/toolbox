@@ -30,7 +30,19 @@ kong_prepare_database() {
         -e KONG_PG_HOST=prom-kong-postgres \
         kong:2.1 \
         /bin/sh -c "kong migrations bootstrap"
+
+    # 初始化kong的数据库
+    # docker run --rm \
+    #     -e KONG_DATABASE=postgres \
+    #     -e KONG_PG_DATABASE=test_kong \
+    #     -e KONG_PG_USER=kong \
+    #     -e KONG_PG_PASSWORD=xxx \
+    #     -e KONG_PG_HOST=127.0.0.1 \
+    #     kong:2.1 \
+    #     /bin/sh -c "kong migrations bootstrap"
 }
+
+
 
 # http://127.0.0.1:8001/
 kong() {
@@ -59,6 +71,14 @@ konga_prepare_database() {
         -c prepare \
         -a postgres \
         -u postgresql://kong:kong@prom-kong-postgres:5432/konga
+    
+    # 初始化konga的数据库
+    # docker run --rm \
+    #     --net=host \
+    #     pantsel/konga:0.14.9 \
+    #     -c prepare \
+    #     -a postgres \
+    #     -u postgresql://kong:xxxx@127.0.0.1:5432/konga
 }
 
 # http://127.0.0.1:1337/
